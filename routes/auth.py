@@ -27,13 +27,13 @@ async def register(request: Request, data: RegisterData):
     if existing_users:
         sendError("user already exists")
 
-    password = data.password
-    hashed_password = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt())
+    password = data.password.encode("utf-8")
+    hashed_password = bcrypt.hashpw(password, bcrypt.gensalt())
     user = User(data.name, data.email, hashed_password, Role.JOB_SEEKER)
     try:
         session.add(user)
         session.flush()
-        profile = JobSeeker(user.id)
+        profile = JobSeeker(user_id=user.id)
         session.add(profile)
         session.commit()
     except:
