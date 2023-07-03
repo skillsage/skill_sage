@@ -55,6 +55,8 @@ class File(Base):
     __tablename__ = "files"
     id = mapped_column(Integer(), primary_key=True, nullable=False)
     data = mapped_column(LargeBinary(), nullable=False)
+    user_id = mapped_column(ForeignKey("users.id"), nullable=False)
+    filename = mapped_column(String(), nullable=False)
 
 
 class Skill(Base):

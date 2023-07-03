@@ -1,9 +1,9 @@
-from models.user import User, Role, JobSeeker, Experience, Skill, JobSeekerSkill
+from models.user import User, Role, JobSeeker, Experience, Skill, JobSeekerSkill, File
 from marshmallow import Schema, fields, validate, ValidationError
 from routes.helpers import sendError, sendSuccess
 from routes.middlewares import user_authentication
 from db.connection import session
-from fastapi import APIRouter, Request, Depends, status
+from fastapi import APIRouter, Request, Depends, status, UploadFile
 from sqlalchemy.orm import subqueryload
 
 import bcrypt
@@ -98,7 +98,12 @@ async def get_experiences(request: Request):
 @router.get("/skill")
 async def get_skills(request: Request):
     try:
-        res = session.query(Skill).join(JobSeekerSkill).filter(JobSeekerSkill.user_id == request.state.user["id"]).all()
+        res = (
+            session.query(Skill)
+            .join(JobSeekerSkill)
+            .filter(JobSeekerSkill.user_id == request.state.user["id"])
+            .all()
+        )
         # res = session.query(Skill).join(JobSeekerSkill, Job).all()
         return sendSuccess(res)
     except Exception as err:
@@ -116,8 +121,8 @@ class SkillData(BaseModel):
 @router.post("/skill")
 async def add_skill(request: Request, skills: list[SkillData]):
     for skill in skills:
-        existingSkill = session.query(Skill).filter(Skill.id == skill.id).count()
-        if existingSkill > 0:
+        existing_skill = session.query(Skill).filter(Skill.id == skill.id).count()
+        if existing_skill > 0:
             sk = JobSeekerSkill()
             sk.skill_id = skill.id
             sk.user_id = request.state.user["seeker_id"]
@@ -133,8 +138,8 @@ class SkillCreate(BaseModel):
 
 @router.post("/create_skill", status_code=status.HTTP_201_CREATED)
 async def create_skill(data: SkillCreate):
-    existingSkill = session.query(Skill).filter(Skill.name == data.name).count()
-    if existingSkill:
+    existing_skill = session.query(Skill).filter(Skill.name == data.name).count()
+    if existing_skill:
         sendError("skill already exists")
 
     sk = Skill(data.name)
@@ -142,3 +147,15 @@ async def create_skill(data: SkillCreate):
     session.commit()
 
     return sendSuccess("created")
+
+
+@router.post("/upload_resume", status_code=status.HTTP_201_CREATED)
+async def upload_resume(file: UploadFile, request: Request):
+    new_file = await file.read()
+    existing_file = session.query(File).filter(File.filename == file.filename).first()
+    if existing_file:
+        return sendError("file already exist")
+    resume = File(data=new_file, user_id=request.state.user["seeker_id"], filename=file.filename)
+    session.add(resume)
+    session.commit()
+    return sendSuccess(f"{file.filename}uploaded")
