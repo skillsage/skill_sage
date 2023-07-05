@@ -25,7 +25,7 @@ async def register(request: Request, data: RegisterData):
     existing_users = session.query(User).filter(User.email == data.email).count()
     print("existing", existing_users)
     if existing_users:
-        sendError("user already exists")
+        return sendError("user already exists")
 
     password = data.password.encode("utf-8")
     hashed_password = bcrypt.hashpw(password, bcrypt.gensalt())
@@ -33,7 +33,7 @@ async def register(request: Request, data: RegisterData):
     try:
         session.add(user)
         session.flush()
-        profile = JobSeeker(user_id=user.id)
+        profile = JobSeeker(user.id)
         session.add(profile)
         session.commit()
     except:
@@ -51,7 +51,6 @@ class LoginData(BaseModel):
 @auth_router.post("/login")
 async def login(request: Request, data: LoginData):
     user = session.query(User).join(JobSeeker).filter(User.email == data.email).first()
-
     if user is not None:
         if bcrypt.checkpw(data.password.encode("utf-8"), user.password):
             token = jwt.encode(
@@ -67,6 +66,6 @@ async def login(request: Request, data: LoginData):
             )
             return sendSuccess({"token": token, "user": user.to_json()})
         else:
-            sendError("invald credentials"), 400
+            return sendError("invalid credentials", 400)
 
-    sendError("login failed"), 500
+    sendError("login failed", 500)

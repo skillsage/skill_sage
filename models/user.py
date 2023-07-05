@@ -1,7 +1,7 @@
 # import the Base from the conection.py
 from db.connection import Base
 from sqlalchemy.orm import mapped_column, relationship, Mapped
-from sqlalchemy import String, Boolean, LargeBinary, Enum, ForeignKey, Integer, Date, inspect
+from sqlalchemy import String, Boolean, LargeBinary, Enum, ForeignKey, Integer, Date
 from fastapi.encoders import jsonable_encoder
 from typing import List
 
@@ -36,7 +36,7 @@ class User(Base):
         self.role = role
 
     def to_json(self):
-        data = {c.key: getattr(self, c.key) for c in inspect(self).mapper.column_attrs}
+        data = jsonable_encoder(self)
         if "password" in data:
             del data["password"]
         return data
