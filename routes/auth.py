@@ -31,16 +31,17 @@ async def register(request: Request, data: RegisterData):
     hashed_password = bcrypt.hashpw(password, bcrypt.gensalt())
     user = User(data.name, data.email, hashed_password, Role.JOB_SEEKER)
     try:
-        session.add(user)
-        session.flush()
-        profile = JobSeeker(user.id)
+        profile = JobSeeker()
         session.add(profile)
+        session.flush()
+        user.profile_id = profile.id
+        session.add(user)
         session.commit()
     except:
         session.rollback()
         sendError("rolling back")
 
-    return sendSuccess(user.to_json())
+    return sendSuccess(user)
 
 
 class LoginData(BaseModel):

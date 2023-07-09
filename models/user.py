@@ -1,7 +1,7 @@
 # import the Base from the conection.py
 from db.connection import Base
 from sqlalchemy.orm import mapped_column, relationship, Mapped
-from sqlalchemy import String, Boolean, LargeBinary, Enum, ForeignKey, Integer, Date
+from sqlalchemy import String, Boolean, LargeBinary, Enum, ForeignKey, Integer, Date, JSON
 from fastapi.encoders import jsonable_encoder
 from typing import List
 
@@ -21,13 +21,22 @@ class AdminRoles(Enum):
 class User(Base):
     __tablename__ = "users"
 
+
+    skills = []
+    resume = [] 
+
     id = mapped_column(Integer(), primary_key=True, nullable=False)
     name = mapped_column(String(), nullable=False)
     email = mapped_column(String(), unique=True, nullable=False)
     password = mapped_column(String(), nullable=False)
     role = mapped_column(String(), nullable=False)
+    profile_image = mapped_column(String())
+    profile_id = mapped_column(ForeignKey("job_seekers.id"))
 
     profile: Mapped["JobSeeker"] = relationship("JobSeeker")
+    experiences: Mapped[List["Experience"]] = relationship("Experience")
+    education: Mapped[List["Education"]] = relationship("Education")
+
 
     def __init__(self, name, email, password, role: str):
         self.name = name
@@ -56,16 +65,15 @@ class File(Base):
     __tablename__ = "files"
     id = mapped_column(Integer(), primary_key=True, nullable=False)
     data = mapped_column(LargeBinary(), nullable=False)
-    user_id = mapped_column(ForeignKey("users.id"), nullable=False)
     filename = mapped_column(String(), nullable=False)
+    type = mapped_column(String(), nullable=False)
+    sha = mapped_column(String(), nullable=False)
 
 
 class Skill(Base):
     __tablename__ = "skills"
     id = mapped_column(Integer(), primary_key=True, nullable=False)
     name = mapped_column(String(), nullable=False)
-
-    seekers: Mapped[List["JobSeekerSkill"]] = relationship("JobSeekerSkill")
 
     def __init__(self, name: str):
         self.name = name
@@ -76,45 +84,61 @@ class JobSeekerSkill(Base):
 
     id = mapped_column(Integer(), primary_key=True, nullable=False)
     skill_id = mapped_column(ForeignKey("skills.id"))
-    user_id = mapped_column(ForeignKey("job_seekers.id"))
+    user_id = mapped_column(ForeignKey("users.id"))
 
-    skill: Mapped["Skill"] = relationship("Skill",foreign_keys=[skill_id])
+    skill:  Mapped["Skill"]= relationship("Skill")
 
-    profile: Mapped["JobSeeker"] = relationship("JobSeeker", foreign_keys=[user_id])
 
 
 class Experience(Base):
     __tablename__ = "experiences"
 
-    user_id = mapped_column(ForeignKey("job_seekers.id"), nullable=False)
+    user_id = mapped_column(Integer(), ForeignKey('users.id'))
     company_name = mapped_column(String(), nullable=False)
     job_title = mapped_column(String(), nullable=False)
     start_date = mapped_column(Date(), nullable=False)
     end_date = mapped_column(Date())
     is_remote = mapped_column(Boolean())
-    is_completed = mapped_column(Boolean())
+    has_completed = mapped_column(Boolean())
     tasks = mapped_column(String())
 
-    profile: Mapped["JobSeeker"] = relationship()
+    # user: Mapped["User"] = relationship("User")
 
+class Education(Base):
+    __tablename__ = "educations"
+
+    user_id = mapped_column(Integer(), ForeignKey('users.id'))
+    program = mapped_column(String(), nullable=False)
+    institution = mapped_column(String(), nullable=False)
+    start_date = mapped_column(Date(), nullable=False)
+    end_date = mapped_column(Date())
+    has_completed = mapped_column(Boolean())
+
+    def __init__(self):
+        pass
+
+    # user: Mapped["User"] = relationship("User")
 
 class JobSeeker(Base):
     __tablename__ = "job_seekers"
-
-    user_id = mapped_column(ForeignKey("users.id"), nullable=False)
+    
     about = mapped_column(String())
     location = mapped_column(String())
     education = mapped_column(String())
-    resume_id = mapped_column(ForeignKey("files.id"))
     portfolio = mapped_column(String())
+    languages = mapped_column(JSON())
 
-    user: Mapped["JobSeeker"] = relationship("User", foreign_keys=[user_id])
+    user = relationship("User", back_populates="profile", lazy="select")
 
-    experiences: Mapped[List["Experience"]] = relationship("Experience")
+    def __init__(self):
+        pass
 
-    def __init__(self, user_id):
-        self.user_id = user_id
 
+        # return self
+class UserResume(Base):
+    __tablename__ = "user_resume"
+    user_id = mapped_column(ForeignKey("users.id"))
+    filename =  mapped_column(String())
 
 class Course(Base):
     __tablename__ = "courses"
