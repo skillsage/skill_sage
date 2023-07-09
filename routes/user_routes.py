@@ -12,7 +12,7 @@ import jwt
 import os
 
 # new imports fast api
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 
 router = APIRouter(
     prefix="/user", tags=["user"], dependencies=[Depends(user_authentication)]
@@ -27,6 +27,21 @@ async def get_user(request: Request):
     return user.to_json()
 
 
+class UpdateUser(BaseModel):
+    name: str
+    email: EmailStr
+
+@router.put("/profile")
+async def update_profile(request: Request, data: UpdateUser):
+    try:
+        user = session.query(User).filter(User.id == request.state.user["id"]).first()
+        user.name = data.name
+        user.email = data.email
+        session.commit()
+        return sendSuccess("profile updated")
+    except Exception as err:
+        return sendError("internal server error", 500)
+
 class UpdateData(BaseModel):
     about: str | None = None
     location: str | None = None
@@ -37,17 +52,19 @@ class UpdateData(BaseModel):
 @router.put("/")
 async def update_user(request: Request, data: UpdateData):
     print(request.state)
-    seeker = (
-        session.query(JobSeeker)
-        .filter(JobSeeker.user_id == request.state.user["id"])
-        .first()
-    )
-    seeker.about = data.about
-    seeker.location = data.location
-    seeker.education = data.education
-    seeker.portfolio = data.portfolio
-    session.commit()
-    return sendSuccess("updated")
+    try:
+        user = request.state.user
+        seeker = (
+            session.query(JobSeeker).filter(JobSeeker.user_id == user["id"]).first()
+        )
+        seeker.about = data.about
+        seeker.location = data.location
+        seeker.education = data.education
+        seeker.portfolio = data.portfolio
+        session.commit()
+        return sendSuccess("updated")
+    except Exception as err:
+        return sendError("internal server error", 500)
 
 
 class ExperienceData(BaseModel):
@@ -149,13 +166,48 @@ async def create_skill(data: SkillCreate):
     return sendSuccess("created")
 
 
+# class UpdateProfile(BaseModel):
+#     about: str | None = None
+#     location: str | None = None
+#     education: str | None = None
+#     portfolio: str | None = None
+
+
+# @router.put("/profile", response_model=UpdateProfile)
+# async def update_profile(request: Request, data: UpdateProfile):
+#     print(data)
+#     try:
+#         profile = session.query(JobSeeker).filter(
+#             JobSeeker.user_id == request.state.user["id"]
+#         ).first()
+#         profile.about = data.about
+#         profile.location = data.location
+#         profile.education = data.education
+#         profile.portfolio = data.portfolio
+#         session.commit()
+#         return sendSuccess("profile updated")
+#     except Exception as err:
+#         print(err)
+#         return sendError("internal server error", 500)
+
+
 @router.post("/upload_resume", status_code=status.HTTP_201_CREATED)
 async def upload_resume(file: UploadFile, request: Request):
-    new_file = await file.read()
-    existing_file = session.query(File).filter(File.filename == file.filename).first()
-    if existing_file:
-        return sendError("file already exist")
-    resume = File(data=new_file, user_id=request.state.user["seeker_id"], filename=file.filename)
-    session.add(resume)
-    session.commit()
-    return sendSuccess(f"{file.filename}uploaded")
+    try:
+        new_file = await file.read()
+        existing_file = (
+            session.query(File).filter(File.filename == file.filename).first()
+        )
+        if existing_file:
+            return sendError("file already exist")
+        resume = File(
+            data=new_file,
+            user_id=request.state.user["seeker_id"],
+            filename=file.filename,
+        )
+        session.add(resume)
+        session.commit()
+        return sendSuccess(f"{file.filename}uploaded")
+    except Exception as err:
+        print(err)
+        return sendError("internal server error", 500)
