@@ -1,0 +1,70 @@
+{
+    "_id": "b91fa4a5-e0b0-42af-9791-e977fe155e5b",
+    "colName": "user",
+    "created": "2023-07-09T09:23:24.608Z",
+    "sortNum": 10000,
+    "folders": [],
+    "requests": [
+        {
+            "_id": "27a9313f-e275-443c-aefe-53d7abd86c26",
+            "colId": "b91fa4a5-e0b0-42af-9791-e977fe155e5b",
+            "containerId": "",
+            "name": "Register",
+            "url": "/auth/register",
+            "method": "POST",
+            "sortNum": 10000,
+            "created": "2023-07-09T09:23:46.702Z",
+            "modified": "2023-07-09T09:24:22.884Z",
+            "headers": [],
+            "params": [],
+            "body": {
+                "type": "json",
+                "raw": "{\n  \"name\": \"Test Account\",\n  \"password\": \"password\",\n  \"email\": \"test@email.com\"\n}",
+                "form": []
+            },
+            "tests": []
+        },
+        {
+            "_id": "05407ea7-3b43-4807-8ec8-553f8bd026c3",
+            "colId": "b91fa4a5-e0b0-42af-9791-e977fe155e5b",
+            "containerId": "",
+            "name": "Login",
+            "url": "/auth/login",
+            "method": "POST",
+            "sortNum": 20000,
+            "created": "2023-07-09T09:24:30.400Z",
+            "modified": "2023-07-09T09:24:52.651Z",
+            "headers": [],
+            "params": [],
+            "body": {
+                "type": "json",
+                "raw": "{\n  \"name\": \"Test Account\",\n  \"password\": \"password\",\n  \"email\": \"test@email.com\"\n}",
+                "form": []
+            },
+            "tests": []
+        },
+        {
+            "_id": "a588e533-6720-432c-a125-481c00289e78",
+            "colId": "b91fa4a5-e0b0-42af-9791-e977fe155e5b",
+            "containerId": "",
+            "name": "Get User",
+            "url": "/user",
+            "method": "GET",
+            "sortNum": 30000,
+            "created": "2023-07-09T09:25:08.438Z",
+            "modified": "2023-07-09T09:25:13.578Z",
+            "headers": [],
+            "params": [],
+            "tests": []
+        }
+    ],
+    "settings": {
+        "auth": {
+            "type": "bearer",
+            "bearer": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Mywic2Vla2VyX2lkIjozLCJlbWFpbCI6InRlc3RAZW1haWwuY29tIiwiZXhwIjoxNjg4OTgxMDkyfQ.UKGmyv7o_s21KG-vpRdEiur6mMJWG9S6Mxxf9ikWS2o"
+        },
+        "options": {
+            "baseUrl": "http://localhost:8000"
+        }
+    }
+}
