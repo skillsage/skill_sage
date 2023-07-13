@@ -28,10 +28,10 @@ async def get_user(request: Request):
     exp = session.query(Experience).filter(Experience.user_id == user_id).all()
     user.education = education
     user.experience = exp
-    # user.profile.id
-    # user.experiences
-    # user.skills
-    # user.education
+    user.profile.id
+    user.experiences
+    user.skills
+    user.education
 
     skills = []
     us = session.query(JobSeekerSkill).join(JobSeekerSkill.skill).filter(JobSeekerSkill.user_id == user_id).all()
