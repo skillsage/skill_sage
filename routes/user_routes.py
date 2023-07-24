@@ -7,7 +7,7 @@ from typing import List, Optional
 
 import datetime
 import uuid
-import hashlib
+import copy
 # new imports fast api
 from pydantic import BaseModel, EmailStr
 
@@ -25,7 +25,8 @@ async def get_user(request: Request):
     user_id = request.state.user["id"]
     print("user is == ",user_id)
     # user = session.query(User).join(User.profile).join(User.experiences).join(User.education).filter(User.id == user_id).first()
-    user = session.query(User).join(User.profile).filter(User.id == user_id).first()
+    u = session.query(User).join(User.profile).filter(User.id == user_id).first()
+    user = copy.copy(u)
     if user is None:
         return sendError(":lol")
     education = session.query(Education).filter(Education.user_id == user_id).all()
@@ -52,7 +53,9 @@ async def get_user(request: Request):
     user.resume = resume_links
 
     if user.profile_image is not None:
-        user.profile_image = base_url + "file/"+ user.profile_image
+        img = user.profile_image
+        user.profile_image = base_url + "file/"+ img
+        # http://localhost:8000/user/file/http://localhost:8000/user/file/b695185f-2d2d-4b7a-b8e1-0ab4dd75f32a.jpg
 
     return sendSuccess(user.to_json())
 
@@ -80,7 +83,7 @@ class ExperienceData(BaseModel):
     start_date: datetime.date
     end_date: datetime.date | None = None
     is_remote: bool = False
-    is_completed: bool = False
+    has_completed: bool = False
     tasks: str | None = None
 
 
@@ -94,7 +97,7 @@ async def add_experience(request: Request, data: ExperienceData):
         exp.start_date = data.start_date
         exp.end_date = data.end_date
         exp.is_remote = data.is_remote
-        exp.is_completed = data.is_completed
+        exp.has_completed = data.has_completed
         exp.tasks = data.tasks
         session.add(exp)
         session.commit()
@@ -105,14 +108,39 @@ async def add_experience(request: Request, data: ExperienceData):
         print(err)
         sendError("unable to add experience")
 
-
-@router.put("/experience")
-async def update_experience(request: Request, data: ExperienceData):
-    exp = session.query(Experience).filter(Experience.id == data.id).count()
+@router.delete("/experience/{id}", status_code=200)
+async def delete_experience(id: str, request: Request):
     try:
-        pass
-    except e as Exception:
-        print(e)
+        user_id = request.state.user["id"]
+        exp = session.query(Experience).filter(Experience.id == id, Experience.user_id == user_id).first()
+        session.delete(exp)
+        session.commit()
+        return sendSuccess("deleted")
+    except Exception as err:
+        return sendError("unable to delete experience")
+
+
+@router.put("/experience", status_code=200)
+async def update_experience(request: Request, data: ExperienceData):
+    try:
+        user_id = request.state.user["id"]
+        exp = session.query(Experience).filter(Experience.id == data.id, Experience.user_id == user_id).first()
+        if exp is None:
+            return sendError("experience not found")
+        
+        print("data is ", data)
+        print("data is ", exp)
+        exp.company_name = data.company_name
+        exp.job_title = data.job_title
+        exp.start_date = data.start_date
+        exp.end_date = data.end_date
+        exp.is_remote = data.is_remote
+        exp.has_completed = data.has_completed
+        exp.tasks = data.tasks
+        session.commit()
+        return sendSuccess("saved")
+    except Exception as err:
+        print(err)
         sendError("unable to update experience")
 
 
@@ -237,21 +265,23 @@ async def update_profile(request: Request, data: UpdateProfile):
 async def upload_image(img: UploadFile, request: Request):
     user_id = request.state.user["id"]
     user = session.query(User).filter(User.id == user_id).first()
-    if user.profile_image is not None:
-        file_delete = session.query(File).filter(File.filename).first()
-        session.delete(file_delete)
+    # if user.profile_image is not None:
+    #     file_delete = session.query(File).filter(File.filename).first()
+    #     session.delete(file_delete)
+    # http://143.198.235.166:3000/
     new_file = await img.read()
     fileSha = getSha(new_file)
     ex_chunk = img.filename.split(".")
     ext = ex_chunk[len(ex_chunk)-1:][0]
     filename = str(uuid.uuid4())+"."+ext
-    img = File(
+    print(filename, ext, sep=" |  " )
+    dbImg = File(
             data=new_file,
             filename=filename,
             type=img.content_type,
             sha=fileSha)
-    session.add(img)
-    user.profile_image = img.filename
+    session.add(dbImg)
+    user.profile_image = filename
 
     session.commit()
     return sendSuccess("uploaded")
@@ -291,11 +321,25 @@ async def upload_resume(file: UploadFile, request: Request):
         print(err)
         return sendError("Internal Server Error", 500)
 
-@router.default("resume")
-async def remove_resume():
+
+class DeleteResume(BaseModel):
+    url: str
+
+@router.delete("/resume")
+async def remove_resume(request: Request, data: DeleteResume):
     try:
+        user_id = request.state.user["id"]
+        url = data.url
+        chunk = url.split("/")
+        filename = chunk[len(chunk)-1:][0]
+        print("filename = ", filename)
+        resume = session.query(UserResume).filter(UserResume.user_id == user_id, UserResume.filename == filename).first()
+        session.delete(resume)
+        session.commit()
+        # DEL: /user/resume?url=link to the file
         pass
     except Exception as err:
+        print(err)
         return sendError("unable to remove resume")
 
 @app_router.get("/file/{filename}")

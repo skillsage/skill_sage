@@ -52,7 +52,7 @@
             "method": "GET",
             "sortNum": 30000,
             "created": "2023-07-09T09:25:08.438Z",
-            "modified": "2023-07-14T07:15:13.590Z",
+            "modified": "2023-07-24T13:12:02.902Z",
             "headers": [
                 {
                     "name": "User-Agent",
@@ -63,7 +63,7 @@
             "params": [],
             "auth": {
                 "type": "bearer",
-                "bearer": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwic2Vla2VyX2lkIjoxLCJlbWFpbCI6Im5hdGhhbm9ybWFuZWwxQGdtYWlsLmNvbSIsImV4cCI6MTY4OTQwMzExNX0.DITwCfe-uBEPyfLTBnHBCCILQrk9UHTSgxRzi4Owld0 "
+                "bearer": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwic2Vla2VyX2lkIjoxLCJlbWFpbCI6InRlc3QyQGVtYWlsLmNvbSIsImV4cCI6MTY5MDI5MDU0N30.k2948u0dSQ7ujba82jMxqq86vOTpqyHE7r2mYNNKpUk"
             },
             "tests": []
         },
@@ -195,6 +195,35 @@
             "created": "2023-07-14T07:33:53.129Z",
             "modified": "2023-07-14T07:33:53.129Z",
             "headers": []
+        },
+        {
+            "_id": "c2600882-a5c0-424b-913f-a1ecc8f49ee7",
+            "colId": "b91fa4a5-e0b0-42af-9791-e977fe155e5b",
+            "containerId": "",
+            "name": "Upload Image",
+            "url": "/user/image",
+            "method": "POST",
+            "sortNum": 100000,
+            "created": "2023-07-24T13:09:20.532Z",
+            "modified": "2023-07-24T13:15:12.468Z",
+            "headers": [],
+            "params": [],
+            "body": {
+                "type": "formdata",
+                "raw": "",
+                "form": [],
+                "files": [
+                    {
+                        "name": "img",
+                        "value": "../../test.png"
+                    }
+                ]
+            },
+            "auth": {
+                "type": "bearer",
+                "bearer": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwic2Vla2VyX2lkIjoxLCJlbWFpbCI6InRlc3QyQGVtYWlsLmNvbSIsImV4cCI6MTY5MDI5MDU0N30.k2948u0dSQ7ujba82jMxqq86vOTpqyHE7r2mYNNKpUk"
+            },
+            "tests": []
         }
     ],
     "settings": {
@@ -203,7 +232,7 @@
             "bearer": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Miwic2Vla2VyX2lkIjoyLCJlbWFpbCI6InRlc3QyQGVtYWlsLmNvbSIsImV4cCI6MTY4ODk5OTA2OH0.mjMguw_okKoFA6_Zq33wn6QvkqJtX12Fqj0xI-3ZUHc"
         },
         "options": {
-            "baseUrl": "http://localhost:8000"
+            "baseUrl": "http://localhost:3000"
         }
     }
 }
