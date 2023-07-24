@@ -33,12 +33,12 @@
             "method": "POST",
             "sortNum": 20000,
             "created": "2023-07-09T09:24:30.400Z",
-            "modified": "2023-07-09T13:34:35.724Z",
+            "modified": "2023-07-14T07:09:46.544Z",
             "headers": [],
             "params": [],
             "body": {
                 "type": "json",
-                "raw": "{\n  \"name\": \"Test Account\",\n  \"password\": \"password\",\n  \"email\": \"test2@email.com\"\n}",
+                "raw": "{\n  \"name\": \"nathanormanel1@gmail.com\",\n  \"password\": \"password\",\n  \"email\": \"test2@email.com\"\n}",
                 "form": []
             },
             "tests": []
@@ -52,7 +52,7 @@
             "method": "GET",
             "sortNum": 30000,
             "created": "2023-07-09T09:25:08.438Z",
-            "modified": "2023-07-09T13:36:01.535Z",
+            "modified": "2023-07-14T07:15:13.590Z",
             "headers": [
                 {
                     "name": "User-Agent",
@@ -61,6 +61,10 @@
                 }
             ],
             "params": [],
+            "auth": {
+                "type": "bearer",
+                "bearer": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwic2Vla2VyX2lkIjoxLCJlbWFpbCI6Im5hdGhhbm9ybWFuZWwxQGdtYWlsLmNvbSIsImV4cCI6MTY4OTQwMzExNX0.DITwCfe-uBEPyfLTBnHBCCILQrk9UHTSgxRzi4Owld0 "
+            },
             "tests": []
         },
         {
@@ -72,13 +76,17 @@
             "method": "PUT",
             "sortNum": 40000,
             "created": "2023-07-09T10:04:17.735Z",
-            "modified": "2023-07-09T12:02:04.093Z",
+            "modified": "2023-07-14T07:53:12.842Z",
             "headers": [],
             "params": [],
             "body": {
                 "type": "json",
-                "raw": "{\n  \"about\": \"Hello World\",\n  \"name\": \"James Danquah\"\n}",
+                "raw": "{\n  \"about\": \"Hello World\",\n  \"languages\": [\"Twi\"]\n}",
                 "form": []
+            },
+            "auth": {
+                "type": "bearer",
+                "bearer": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwic2Vla2VyX2lkIjoxLCJlbWFpbCI6Im5hdGhhbm9ybWFuZWwxQGdtYWlsLmNvbSIsImV4cCI6MTY4OTQwMzExNX0.DITwCfe-uBEPyfLTBnHBCCILQrk9UHTSgxRzi4Owld0"
             },
             "tests": []
         },
@@ -106,17 +114,21 @@
             "colId": "b91fa4a5-e0b0-42af-9791-e977fe155e5b",
             "containerId": "",
             "name": "Create Skills",
-            "url": "/user/create-skill",
+            "url": "/user/create_skill",
             "method": "POST",
             "sortNum": 60000,
             "created": "2023-07-09T12:37:18.917Z",
-            "modified": "2023-07-09T13:34:47.534Z",
+            "modified": "2023-07-14T07:08:18.945Z",
             "headers": [],
             "params": [],
             "body": {
                 "type": "json",
                 "raw": "{\n  \"skills\": [\"golang\", \"gorm\"]\n}",
                 "form": []
+            },
+            "auth": {
+                "type": "bearer",
+                "bearer": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Miwic2Vla2VyX2lkIjoyLCJlbWFpbCI6InRlc3QyQGVtYWlsLmNvbSIsImV4cCI6MTY4OTQwNDc1OH0.cAGTYbW49kuXowQOlQYXxSgMekt7JMAxbI4hsNjhL7Q"
             },
             "tests": []
         },
@@ -129,7 +141,7 @@
             "method": "POST",
             "sortNum": 70000,
             "created": "2023-07-09T12:47:59.365Z",
-            "modified": "2023-07-09T12:48:36.115Z",
+            "modified": "2023-07-14T07:15:29.287Z",
             "headers": [],
             "params": [],
             "body": {
@@ -137,7 +149,52 @@
                 "raw": "{\n  \"skills\": [1,3,4,5]\n}",
                 "form": []
             },
+            "auth": {
+                "type": "bearer",
+                "bearer": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwic2Vla2VyX2lkIjoxLCJlbWFpbCI6Im5hdGhhbm9ybWFuZWwxQGdtYWlsLmNvbSIsImV4cCI6MTY4OTQwMzExNX0.DITwCfe-uBEPyfLTBnHBCCILQrk9UHTSgxRzi4Owld0 "
+            },
             "tests": []
+        },
+        {
+            "_id": "ad1117eb-83d3-4bc0-bbfa-6fe2f85a4786",
+            "colId": "b91fa4a5-e0b0-42af-9791-e977fe155e5b",
+            "containerId": "",
+            "name": "uploadResume",
+            "url": "/user/upload_resume",
+            "method": "POST",
+            "sortNum": 80000,
+            "created": "2023-07-14T07:25:34.210Z",
+            "modified": "2023-07-14T07:26:47.027Z",
+            "headers": [],
+            "params": [],
+            "body": {
+                "type": "formdata",
+                "raw": "",
+                "form": [],
+                "files": [
+                    {
+                        "name": "file",
+                        "value": "..\\..\\..\\..\\..\\..\\Downloads\\Documents\\Nathan Kulewoshie_CV.pdf"
+                    }
+                ]
+            },
+            "auth": {
+                "type": "bearer",
+                "bearer": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwic2Vla2VyX2lkIjoxLCJlbWFpbCI6Im5hdGhhbm9ybWFuZWwxQGdtYWlsLmNvbSIsImV4cCI6MTY4OTQwMzExNX0.DITwCfe-uBEPyfLTBnHBCCILQrk9UHTSgxRzi4Owld0"
+            },
+            "tests": []
+        },
+        {
+            "_id": "d07efa0d-f555-4854-8bbf-0e3c57e9cf20",
+            "colId": "b91fa4a5-e0b0-42af-9791-e977fe155e5b",
+            "containerId": "",
+            "name": "addLanguage",
+            "url": "",
+            "method": "GET",
+            "sortNum": 90000,
+            "created": "2023-07-14T07:33:53.129Z",
+            "modified": "2023-07-14T07:33:53.129Z",
+            "headers": []
         }
     ],
     "settings": {

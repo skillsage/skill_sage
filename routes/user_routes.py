@@ -3,7 +3,7 @@ from routes.helpers import sendError, sendSuccess, getSha
 from routes.middlewares import user_authentication
 from db.connection import session
 from fastapi import APIRouter, Request, Depends, status, UploadFile, Response
-from typing import List
+from typing import List, Optional
 
 import datetime
 import uuid
@@ -15,6 +15,10 @@ router = APIRouter(
     prefix="/user", tags=["user"], dependencies=[Depends(user_authentication)]
 )
 
+app_router = APIRouter(
+    prefix="/user", tags=["user"],
+)
+
 
 @router.get("/")
 async def get_user(request: Request):
@@ -22,7 +26,7 @@ async def get_user(request: Request):
     print("user is == ",user_id)
     # user = session.query(User).join(User.profile).join(User.experiences).join(User.education).filter(User.id == user_id).first()
     user = session.query(User).join(User.profile).filter(User.id == user_id).first()
-    if user == None:
+    if user is None:
         return sendError(":lol")
     education = session.query(Education).filter(Education.user_id == user_id).all()
     exp = session.query(Experience).filter(Experience.user_id == user_id).all()
@@ -47,7 +51,7 @@ async def get_user(request: Request):
     user.skills = skills
     user.resume = resume_links
 
-    if user.profile_image != None:
+    if user.profile_image is not None:
         user.profile_image = base_url + "file/"+ user.profile_image
 
     return sendSuccess(user.to_json())
@@ -70,6 +74,7 @@ async def get_user(request: Request):
 
 
 class ExperienceData(BaseModel):
+    id: Optional[int] = None
     company_name: str
     job_title: str
     start_date: datetime.date
@@ -99,6 +104,17 @@ async def add_experience(request: Request, data: ExperienceData):
     except Exception as err:
         print(err)
         sendError("unable to add experience")
+
+
+@router.put("/experience")
+async def update_experience(request: Request, data: ExperienceData):
+    exp = session.query(Experience).filter(Experience.id == data.id).count()
+    try:
+        pass
+    except e as Exception:
+        print(e)
+        sendError("unable to update experience")
+
 
 
 class EducationData(BaseModel):
@@ -185,12 +201,11 @@ async def create_skill(data: SkillCreate):
 
 
 class UpdateProfile(BaseModel):
-    name: str | None
-    about: str | None = None
-    location: str | None = None
-    portfolio: str | None = None
-    languages: List[str] | None
-
+    name: Optional[str] = None
+    about: Optional[str] = None
+    location: Optional[str] = None
+    portfolio: Optional[str] = None
+    languages: Optional[List[str]] = None
 
 @router.put("/profile")
 async def update_profile(request: Request, data: UpdateProfile):
@@ -200,19 +215,20 @@ async def update_profile(request: Request, data: UpdateProfile):
         profile = session.query(JobSeeker).filter(
             JobSeeker.id == user.profile_id
         ).first()
-        if data.name != None:
+        if data.name is not None:
             user.name = data.name
-        if data.about != None:
+        if data.about is not None:
             profile.about = data.about
-        if data.location != None:
+        if data.location is not None:
             profile.location = data.location
-        if data.portfolio != None:
-            profile.portfolio   = data.portfolio
-        if data.languages != None:
-            profile.languages   = data.languages
+        if data.portfolio is not None:
+            profile.portfolio = data.portfolio
+        if data.languages is not None:
+            profile.languages = data.languages
+       
         session.commit()
+        return sendSuccess("Profile updated successfully")
 
-        return sendSuccess("updated")
     except Exception as err:
         print(err)
         return sendError("internal server error", 500)
@@ -221,8 +237,9 @@ async def update_profile(request: Request, data: UpdateProfile):
 async def upload_image(img: UploadFile, request: Request):
     user_id = request.state.user["id"]
     user = session.query(User).filter(User.id == user_id).first()
-    if user.profile_image != None:
-        session.query(File).filter(File.filename).delete()
+    if user.profile_image is not None:
+        file_delete = session.query(File).filter(File.filename).first()
+        session.delete(file_delete)
     new_file = await img.read()
     fileSha = getSha(new_file)
     ex_chunk = img.filename.split(".")
@@ -274,7 +291,14 @@ async def upload_resume(file: UploadFile, request: Request):
         print(err)
         return sendError("Internal Server Error", 500)
 
-@router.get("/file/{filename}")
+@router.default("resume")
+async def remove_resume():
+    try:
+        pass
+    except Exception as err:
+        return sendError("unable to remove resume")
+
+@app_router.get("/file/{filename}")
 async def stream_file(filename: str,  request: Request, resp: Response):
     
     try:
@@ -285,3 +309,4 @@ async def stream_file(filename: str,  request: Request, resp: Response):
     except Exception as err:
         print(err)
         return sendError("unable to get file", 500)
+
