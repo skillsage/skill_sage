@@ -374,8 +374,7 @@ async def remove_resume(request: Request, data: DeleteResume):
         resume = session.query(UserResume).filter(UserResume.user_id == user_id, UserResume.filename == filename).first()
         session.delete(resume)
         session.commit()
-        # DEL: /user/resume?url=link to the file
-        pass
+        return sendSuccess("deleted")
     except Exception as err:
         print(err)
         return sendError("unable to remove resume")
