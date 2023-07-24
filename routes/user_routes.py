@@ -25,8 +25,7 @@ async def get_user(request: Request):
     user_id = request.state.user["id"]
     print("user is == ",user_id)
     # user = session.query(User).join(User.profile).join(User.experiences).join(User.education).filter(User.id == user_id).first()
-    u = session.query(User).join(User.profile).filter(User.id == user_id).first()
-    user = copy.copy(u)
+    user = session.query(User).join(User.profile).filter(User.id == user_id).first()
     if user is None:
         return sendError(":lol")
     education = session.query(Education).filter(Education.user_id == user_id).all()
@@ -52,12 +51,13 @@ async def get_user(request: Request):
     user.skills = skills
     user.resume = resume_links
 
+    u = copy.copy(user)
     if user.profile_image is not None:
         img = user.profile_image
-        user.profile_image = base_url + "file/"+ img
+        u.profile_image = base_url + "file/"+ img
         # http://localhost:8000/user/file/http://localhost:8000/user/file/b695185f-2d2d-4b7a-b8e1-0ab4dd75f32a.jpg
 
-    return sendSuccess(user.to_json())
+    return sendSuccess(u.to_json())
 
 
 # class UpdateUser(BaseModel):
@@ -146,12 +146,47 @@ async def update_experience(request: Request, data: ExperienceData):
 
 
 class EducationData(BaseModel):
+    id: Optional[int] = None
     program: str
     institution: str
     start_date: datetime.date
     end_date: datetime.date | None
     has_completed: bool = False
+
+
+@router.put("/education")
+def update_education(request: Request, data: EducationData):
+    try:
+        user_id = request.state.user["id"]
+        edu =session.query(Education).filter(Education.id == data.id, Education.user_id == user_id).first()
+        if edu is None:
+            return sendError("not found")
+        edu.program = data.program
+        edu.institution = data.institution
+        edu.start_date = data.start_date
+        edu.end_date = data.end_date
+        edu.has_completed = data.has_completed
+        session.commit()
+        return sendSuccess("updated")
     
+    except Exception as err:
+        return sendError("uanle to update education")
+
+
+
+@router.delete("/education/{id}")
+def deleete_education(request: Request, id: str):
+    try:
+        user_id = request.state.user["id"]
+        edu =session.query(Education).filter(Education.id == id, Education.user_id == user_id).first()
+        if edu is None:
+            return sendError("not found")
+        session.delete(edu)
+        session.commit()
+
+        return sendSuccess("deleted")
+    except Exception as err:
+        return sendError("uanle to update education")
 @router.post("/education")
 def add_education(request: Request, data: EducationData):
     ed = Education()
@@ -189,6 +224,7 @@ async def get_skills(request: Request):
         )
 
 
+
 # skill model for request body
 class SkillData(BaseModel):
     skills: List[int]
@@ -197,16 +233,18 @@ class SkillData(BaseModel):
 @router.post("/skill")
 async def add_skill(request: Request, data: SkillData):
     user_id = request.state.user["id"]
+    exist = session.query(JobSeekerSkill).filter(JobSeekerSkill.user_id == user_id).all()
+    for i in exist:
+        session.delete(i)
     for skill_id in data.skills:
         count = session.query(Skill).filter(Skill.id == skill_id).count()
         if count > 0:
-            ext = session.query(JobSeekerSkill).filter(JobSeekerSkill.id == skill_id, JobSeekerSkill.user_id == user_id).count()
-            if ext < 1 :
-                print("adding ", skill_id, " to ", user_id)
-                sk = JobSeekerSkill()
-                sk.skill_id = skill_id
-                sk.user_id = user_id
-                session.add(sk)
+            print("adding ", skill_id, " to ", user_id)
+            sk = JobSeekerSkill()
+            sk.skill_id = skill_id
+            sk.user_id = user_id
+            session.add(sk)
+            
     session.commit()
     return sendSuccess("skills uploaded")
 
