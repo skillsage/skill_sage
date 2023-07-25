@@ -223,6 +223,18 @@ async def get_skills(request: Request):
             "unable to fetch skills", status.HTTP_500_INTERNAL_SERVER_ERROR
         )
 
+@router.get("/skills")
+async def get_all_skills():
+    try:
+        res = session.query(Skill).all()
+        # res = session.query(Skill).join(JobSeekerSkill, Job).all()
+        print(res)
+        return sendSuccess(res)
+    except Exception as err:
+        print(err)
+        return sendError(
+            "unable to fetch skills", status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
 
 
 # skill model for request body
@@ -372,7 +384,9 @@ async def remove_resume(request: Request, data: DeleteResume):
         filename = chunk[len(chunk)-1:][0]
         print("filename = ", filename)
         resume = session.query(UserResume).filter(UserResume.user_id == user_id, UserResume.filename == filename).first()
+        resume_file = session.query(File).filter(File.filename == filename).first()
         session.delete(resume)
+        session.delete(resume_file)
         session.commit()
         return sendSuccess("deleted")
     except Exception as err:
