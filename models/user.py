@@ -1,9 +1,11 @@
 # import the Base from the conection.py
 from db.connection import Base
 from sqlalchemy.orm import mapped_column, relationship, Mapped
-from sqlalchemy import String, Boolean, LargeBinary, Enum, ForeignKey, Integer, Date, JSON
+from sqlalchemy import String, Boolean, LargeBinary, JSON, Enum, ForeignKey, Integer, Date, JSON
 from fastapi.encoders import jsonable_encoder
+from sqlalchemy.dialects.postgresql import JSONB, insert
 from typing import List
+
 
 class Role(Enum):
     JOB_SEEKER = "JOB_SEEKER"
@@ -21,9 +23,8 @@ class AdminRoles(Enum):
 class User(Base):
     __tablename__ = "users"
 
-
     skills = []
-    resume = [] 
+    resume = []
 
     id = mapped_column(Integer(), primary_key=True, nullable=False)
     name = mapped_column(String(), nullable=False)
@@ -36,7 +37,6 @@ class User(Base):
     profile: Mapped["JobSeeker"] = relationship("JobSeeker")
     experiences: Mapped[List["Experience"]] = relationship("Experience")
     education: Mapped[List["Education"]] = relationship("Education")
-
 
     def __init__(self, name, email, password, role: str):
         self.name = name
@@ -70,10 +70,18 @@ class File(Base):
     sha = mapped_column(String(), nullable=False)
 
 
+class SkillFactor(Base):
+    __tablename__ = "skill_factors"
+    id = mapped_column(Integer(), primary_key=True, nullable=False)
+    skill = mapped_column(String(), nullable=False)
+    factor = mapped_column(JSONB(), nullable=False)
+
+
 class Skill(Base):
     __tablename__ = "skills"
     id = mapped_column(Integer(), primary_key=True, nullable=False)
     name = mapped_column(String(), nullable=False)
+    lower = mapped_column(String(), nullable=False)
 
     def __init__(self, name: str):
         self.name = name
@@ -86,8 +94,7 @@ class JobSeekerSkill(Base):
     skill_id = mapped_column(ForeignKey("skills.id"))
     user_id = mapped_column(ForeignKey("users.id"))
 
-    skill:  Mapped["Skill"]= relationship("Skill")
-
+    skill:  Mapped["Skill"] = relationship("Skill")
 
 
 class Experience(Base):
@@ -104,6 +111,7 @@ class Experience(Base):
 
     # user: Mapped["User"] = relationship("User")
 
+
 class Education(Base):
     __tablename__ = "educations"
 
@@ -119,9 +127,10 @@ class Education(Base):
 
     # user: Mapped["User"] = relationship("User")
 
+
 class JobSeeker(Base):
     __tablename__ = "job_seekers"
-    
+
     about = mapped_column(String())
     location = mapped_column(String())
     education = mapped_column(String())
@@ -133,12 +142,14 @@ class JobSeeker(Base):
     def __init__(self):
         pass
 
-
         # return self
+
+
 class UserResume(Base):
     __tablename__ = "user_resume"
     user_id = mapped_column(ForeignKey("users.id"))
-    filename =  mapped_column(String())
+    filename = mapped_column(String())
+
 
 class Course(Base):
     __tablename__ = "courses"

@@ -22,14 +22,17 @@ class RegisterData(BaseModel):
 
 @auth_router.post("/register", status_code=status.HTTP_201_CREATED)
 async def register(request: Request, data: RegisterData):
-    existing_users = session.query(User).filter(User.email == data.email).count()
+    existing_users = session.query(User).filter(
+        User.email == data.email).count()
     print("existing", existing_users)
     if existing_users:
         return sendError("user already exists")
 
     password = data.password.encode("utf-8")
     hashed_password = bcrypt.hashpw(password, bcrypt.gensalt())
-    user = User(data.name, data.email, hashed_password, Role.JOB_SEEKER)
+    print(hashed_password)
+    user = User(data.name, data.email, bytes.decode(
+        hashed_password, "utf-8"), Role.JOB_SEEKER)
     try:
         profile = JobSeeker()
         session.add(profile)
@@ -51,9 +54,12 @@ class LoginData(BaseModel):
 
 @auth_router.post("/login")
 async def login(request: Request, data: LoginData):
-    user = session.query(User).join(JobSeeker).filter(User.email == data.email).first()
+    user = session.query(User).join(JobSeeker).filter(
+        User.email == data.email).first()
+
+    print("user is ", user.password)
     if user is not None:
-        if bcrypt.checkpw(data.password.encode("utf-8"), user.password):
+        if bcrypt.checkpw(data.password.encode("utf-8"), user.password.encode("utf-8")):
             token = jwt.encode(
                 {
                     "id": user.id,

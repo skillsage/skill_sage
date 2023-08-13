@@ -1,4 +1,8 @@
 {
   "thunder-client.saveToWorkspace": true,
-  "thunder-client.workspaceRelativePath": ".thunder-client"
+  "thunder-client.workspaceRelativePath": ".thunder-client",
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.autopep8"
+  },
+  "python.formatting.provider": "none"
 }

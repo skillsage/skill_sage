@@ -33,12 +33,12 @@
             "method": "POST",
             "sortNum": 20000,
             "created": "2023-07-09T09:24:30.400Z",
-            "modified": "2023-07-14T07:09:46.544Z",
+            "modified": "2023-08-13T14:11:02.107Z",
             "headers": [],
             "params": [],
             "body": {
                 "type": "json",
-                "raw": "{\n  \"name\": \"nathanormanel1@gmail.com\",\n  \"password\": \"password\",\n  \"email\": \"test2@email.com\"\n}",
+                "raw": "{\n  \"password\": \"password\",\n  \"email\": \"test2@email.com\"\n}",
                 "form": []
             },
             "tests": []
@@ -52,7 +52,7 @@
             "method": "GET",
             "sortNum": 30000,
             "created": "2023-07-09T09:25:08.438Z",
-            "modified": "2023-07-24T13:12:02.902Z",
+            "modified": "2023-08-13T15:03:48.017Z",
             "headers": [
                 {
                     "name": "User-Agent",
@@ -61,10 +61,6 @@
                 }
             ],
             "params": [],
-            "auth": {
-                "type": "bearer",
-                "bearer": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwic2Vla2VyX2lkIjoxLCJlbWFpbCI6InRlc3QyQGVtYWlsLmNvbSIsImV4cCI6MTY5MDI5MDU0N30.k2948u0dSQ7ujba82jMxqq86vOTpqyHE7r2mYNNKpUk"
-            },
             "tests": []
         },
         {
@@ -141,17 +137,13 @@
             "method": "POST",
             "sortNum": 70000,
             "created": "2023-07-09T12:47:59.365Z",
-            "modified": "2023-07-14T07:15:29.287Z",
+            "modified": "2023-08-13T15:03:34.859Z",
             "headers": [],
             "params": [],
             "body": {
                 "type": "json",
-                "raw": "{\n  \"skills\": [1,3,4,5]\n}",
+                "raw": "{\n  \"skills\": [180,181,541]\n}",
                 "form": []
-            },
-            "auth": {
-                "type": "bearer",
-                "bearer": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwic2Vla2VyX2lkIjoxLCJlbWFpbCI6Im5hdGhhbm9ybWFuZWwxQGdtYWlsLmNvbSIsImV4cCI6MTY4OTQwMzExNX0.DITwCfe-uBEPyfLTBnHBCCILQrk9UHTSgxRzi4Owld0 "
             },
             "tests": []
         },
@@ -224,12 +216,52 @@
                 "bearer": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwic2Vla2VyX2lkIjoxLCJlbWFpbCI6InRlc3QyQGVtYWlsLmNvbSIsImV4cCI6MTY5MDI5MDU0N30.k2948u0dSQ7ujba82jMxqq86vOTpqyHE7r2mYNNKpUk"
             },
             "tests": []
+        },
+        {
+            "_id": "e4320c5b-5d4a-4f62-88cc-771657443e6c",
+            "colId": "b91fa4a5-e0b0-42af-9791-e977fe155e5b",
+            "containerId": "",
+            "name": "Get Skills",
+            "url": "/user/skills?q=teach",
+            "method": "GET",
+            "sortNum": 110000,
+            "created": "2023-08-13T14:21:23.979Z",
+            "modified": "2023-08-13T15:20:30.221Z",
+            "headers": [],
+            "params": [
+                {
+                    "name": "q",
+                    "value": "teach",
+                    "isPath": false
+                }
+            ],
+            "tests": []
+        },
+        {
+            "_id": "033339c7-02a6-47ad-823b-4fcbe238b5ef",
+            "colId": "b91fa4a5-e0b0-42af-9791-e977fe155e5b",
+            "containerId": "",
+            "name": "Get Recommendations",
+            "url": "/user/recommend_skills?limit=200",
+            "method": "GET",
+            "sortNum": 120000,
+            "created": "2023-08-13T15:12:27.500Z",
+            "modified": "2023-08-13T15:19:27.440Z",
+            "headers": [],
+            "params": [
+                {
+                    "name": "limit",
+                    "value": "200",
+                    "isPath": false
+                }
+            ],
+            "tests": []
         }
     ],
     "settings": {
         "auth": {
             "type": "bearer",
-            "bearer": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Miwic2Vla2VyX2lkIjoyLCJlbWFpbCI6InRlc3QyQGVtYWlsLmNvbSIsImV4cCI6MTY4ODk5OTA2OH0.mjMguw_okKoFA6_Zq33wn6QvkqJtX12Fqj0xI-3ZUHc"
+            "bearer": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwic2Vla2VyX2lkIjoxLCJlbWFpbCI6InRlc3QyQGVtYWlsLmNvbSIsImV4cCI6MTY5MjAyNDQwNn0.fWbuD7KMFufpOWI7nziM9n3_gPKvHJeFw9nLWeaR6IA"
         },
         "options": {
             "baseUrl": "http://localhost:3000"
