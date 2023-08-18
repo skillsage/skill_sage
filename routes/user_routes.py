@@ -43,7 +43,7 @@ async def get_user(request: Request):
     us = session.query(JobSeekerSkill).join(JobSeekerSkill.skill).filter(
         JobSeekerSkill.user_id == user_id).all()
     for i in us:
-        skills.append({"name" : i.skill.name, "id" : i.skill.id})
+        skills.append({'name' : i.skill.name, 'id' : i.skill.id})
 
     base_url = request.url._url
     resume_links = []
