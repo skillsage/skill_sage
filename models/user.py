@@ -3,15 +3,15 @@ from db.connection import Base
 from sqlalchemy.orm import mapped_column, relationship, Mapped
 from sqlalchemy import String, Boolean, LargeBinary, JSON, Enum, ForeignKey, Integer, Date, JSON
 from fastapi.encoders import jsonable_encoder
-from sqlalchemy.dialects.postgresql import JSONB, insert
+from sqlalchemy.dialects.postgresql import JSONB
 from typing import List
 
 
 class Role(Enum):
     JOB_SEEKER = "JOB_SEEKER"
     EMPLOYER = "EMPLOYER"
-    SKIL_DEV_PROVIDER = "SKILL_DEV_PROVIDER"
-    SYS_ADMIN = "SYS_ADMIN"
+    CREATOR = "CREATOR"
+    ADMIN = "ADMIN"
     ANALYST = "ANALYST"
 
 
@@ -25,12 +25,11 @@ class User(Base):
 
     skills = []
     resume = []
-
     id = mapped_column(Integer(), primary_key=True, nullable=False)
     name = mapped_column(String(), nullable=False)
     email = mapped_column(String(), unique=True, nullable=False)
     password = mapped_column(String(), nullable=False)
-    role = mapped_column(String(), nullable=False)
+    role = mapped_column(String(), nullable=False, default=Role.JOB_SEEKER)
     profile_image = mapped_column(String())
     profile_id = mapped_column(ForeignKey("job_seekers.id"))
 
@@ -149,29 +148,3 @@ class UserResume(Base):
     __tablename__ = "user_resume"
     user_id = mapped_column(ForeignKey("users.id"))
     filename = mapped_column(String())
-
-
-class Course(Base):
-    __tablename__ = "courses"
-
-    id = mapped_column(Integer(), primary_key=True, nullable=False)
-    user_id = mapped_column(ForeignKey("users.id"))
-    course_name = mapped_column(String(), nullable=False)
-    link_to = mapped_column(String(), nullable=False)
-    is_verified = mapped_column(Boolean())
-
-
-class UserCourse(Base):
-    __tablename__ = "user_courses"
-
-    id = mapped_column(Integer(), primary_key=True, nullable=False)
-    user_id = mapped_column(ForeignKey("users.id"))
-    course_id = mapped_column(ForeignKey("courses.id"))
-
-
-class SysAdminRole(Base):
-    __tablename__ = "sys_admin_roles"
-
-    id = mapped_column(Integer(), primary_key=True, nullable=False)
-    user_id = mapped_column(ForeignKey("users.id"))
-    role = mapped_column(String(), nullable=False)

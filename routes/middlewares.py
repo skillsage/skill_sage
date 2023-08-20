@@ -2,6 +2,7 @@ from functools import wraps
 
 from fastapi import Request, HTTPException
 from fastapi.responses import JSONResponse
+from models.user import Role
 
 from routes.helpers import sendError
 
@@ -9,19 +10,26 @@ import jwt
 import os
 
 
-async def user_authentication(request: Request):
-    if "authorization" not in request.headers:
-        raise HTTPException(status_code=401, detail="Unauthorized")
+def with_authentication(roles: list[Role]):
+    def user_auth(request: Request):
+        if "authorization" not in request.headers:
+            raise HTTPException(status_code=401, detail="Unauthorized")
 
-    bearer = request.headers["authorization"]
-    token = bearer.split(" ")[1]
+        bearer = request.headers["authorization"]
+        token = bearer.split(" ")[1]
 
-    try:
-        data = jwt.decode(token, os.environ["SECRET_KEY"], algorithms=["HS256"])
-    except Exception as err:
-        print(err)
-        raise HTTPException(status_code=401, detail="Invalid token")
+        try:
+            data = jwt.decode(
+                token, os.environ["SECRET_KEY"], algorithms=["HS256"])
+        except Exception as err:
+            print(err)
+            raise HTTPException(status_code=401, detail="Invalid token")
 
-    request.state.user = data
+        for role in roles:
+            print("give a pass", roles, data)
+            if role == data["role"]:
+                request.state.user = data
+                return data
 
-    return data
+        raise HTTPException(status_code=401)
+    return user_auth
