@@ -56,23 +56,32 @@ class LoginData(BaseModel):
 async def login(request: Request, data: LoginData):
     user = session.query(User).join(JobSeeker).filter(
         User.email == data.email).first()
+    if user is None:
+        return sendError("not found")
+
+    user = session.query(User).join(JobSeeker).filter(
+        User.email == data.email).first()
 
     print("user is ", user.password)
     if user is not None:
         if bcrypt.checkpw(data.password.encode("utf-8"), user.password.encode("utf-8")):
-            token = jwt.encode(
+            token = generate_token(
                 {
                     "id": user.id,
                     "seeker_id": user.profile.id,
                     "email": user.email,
+                    "role": user.role,
                     "exp": datetime.datetime.now(tz=datetime.timezone.utc)
                     + datetime.timedelta(hours=24),
-                },
-                os.environ["SECRET_KEY"],
-                algorithm="HS256",
-            )
+                })
             return sendSuccess({"token": token, "user": user.to_json()})
         else:
             return sendError("invalid credentials", 400)
 
-    sendError("login failed", 500)
+
+def generate_token(data):
+    return jwt.encode(
+        data,
+        os.environ["SECRET_KEY"],
+        algorithm="HS256",
+    )

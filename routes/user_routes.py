@@ -1,6 +1,6 @@
 from models.user import User, Role, Education, JobSeeker, Experience, Skill, JobSeekerSkill, File, UserResume
-from routes.helpers import sendError, sendSuccess, getSha
-from routes.middlewares import user_authentication
+from .helpers import sendError, sendSuccess, getSha
+from .middlewares import with_authentication
 from db.connection import session, recommend
 from fastapi import APIRouter, Request, Depends, status, UploadFile, Response
 from typing import List, Optional
@@ -12,7 +12,7 @@ import copy
 from pydantic import BaseModel, EmailStr
 
 router = APIRouter(
-    prefix="/user", tags=["user"], dependencies=[Depends(user_authentication)]
+    prefix="/user", tags=["user"], dependencies=[Depends(with_authentication([Role.JOB_SEEKER, Role.CREATOR]))]
 )
 
 app_router = APIRouter(
