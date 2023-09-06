@@ -181,7 +181,7 @@ def update_education(request: Request, data: EducationData):
 
 
 @router.delete("/education/{id}")
-def deleete_education(request: Request, id: str):
+def delete_education(request: Request, id: str):
     try:
         user_id = request.state.user["id"]
         edu = session.query(Education).filter(

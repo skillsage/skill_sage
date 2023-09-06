@@ -2,7 +2,7 @@
 from db.connection import Base
 
 from sqlalchemy.orm import mapped_column, relationship, Mapped
-from sqlalchemy import String, ARRAY, Boolean, LargeBinary, JSON, Enum, ForeignKey, Integer, Date, JSON
+from sqlalchemy import String, ARRAY, Boolean, LargeBinary, JSON, Enum, ForeignKey, Integer, Date, Float, JSON
 
 
 class JobType(Enum):
@@ -13,7 +13,12 @@ class JobType(Enum):
 class Job(Base):
     __tablename__ = "jobs"
     title = mapped_column(String(), nullable=False)
+    location = mapped_column(String(), nullable=False)
+    expiry = mapped_column(Date(), nullable=False)
+    salary = mapped_column(Float(), nullable=False)
     description = mapped_column(String(), nullable=False)
+    requirements = mapped_column(ARRAY(String()))
+    image = mapped_column(String())
     type = mapped_column(String(), nullable=False)
     position = mapped_column(String(), nullable=False)
     skills = mapped_column(ARRAY(String()))
