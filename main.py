@@ -19,7 +19,8 @@ app.include_router(c_router)
 app.include_router(j_router)
 
 origins = [
-    "http://localhost:3000"
+    "http://localhost:3000",
+    "https://skill-sage.netlify.app"
 ]
 app.add_middleware(
     CORSMiddleware,
