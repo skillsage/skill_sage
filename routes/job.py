@@ -11,7 +11,7 @@ import datetime
 router = APIRouter(
     prefix="/job",
     tags=["job"],
-    dependencies=[Depends(with_authentication([Role.JOB_SEEKER]))],
+    dependencies=[Depends(with_authentication([Role.JOB_SEEKER, Role.CREATOR, Role.EMPLOYER]))],
 )
 
 
