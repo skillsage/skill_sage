@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Request, Depends, status, UploadFile, Response
 from .middlewares import with_authentication
 from models.user import Role
-from models.job import Job
+from models.job import Job, Bookmark, JobApplication
 from db.connection import session
 from pydantic import BaseModel, EmailStr
 from .helpers import sendError, sendSuccess
@@ -11,7 +11,9 @@ import datetime
 router = APIRouter(
     prefix="/job",
     tags=["job"],
-    dependencies=[Depends(with_authentication([Role.JOB_SEEKER, Role.CREATOR, Role.EMPLOYER]))],
+    dependencies=[
+        Depends(with_authentication([Role.JOB_SEEKER, Role.CREATOR, Role.EMPLOYER]))
+    ],
 )
 
 
@@ -28,6 +30,7 @@ class JobData(BaseModel):
     expiry: datetime.date | None = None
     salary: float | None = None
     type: str | None = None
+    company: str | None = None
 
 
 @router.post("/")
@@ -46,6 +49,7 @@ async def post_job(request: Request, data: JobData):
         job.expiry = data.expiry
         job.salary = data.salary
         job.type = data.type
+        job.company = data.company
         session.add(job)
         session.commit()
         return sendSuccess("created")
@@ -86,6 +90,8 @@ async def update_job(request: Request, data: JobData):
             job.salary = data.salary
         if data.type is not None:
             job.type = data.type
+        if data.job is not None:
+            job.company = data.company
 
         session.commit()
         return sendSuccess("Job updated successfully")
@@ -112,6 +118,7 @@ async def get_jobs():
                 "type": job.type,
                 "position": job.position,
                 "skills": job.skills,
+                "company": job.company,
                 "user_id": job.user_id,
             }
             job_list.append(job_dict)
@@ -138,3 +145,151 @@ async def delete_job(job_id: int, request: Request):
     except Exception as err:
         print(err)
         return sendError("Failed to delete job")
+
+
+@router.post("/bookmark/{job_id}")
+async def create_bookmark(job_id: int, request: Request):
+    user_id = request.state.user["id"]
+    try:
+        job = session.query(Bookmark).filter(Bookmark.job_id == job_id).first()
+
+        if job is not None:
+            return sendError("already exists")
+
+        bk = Bookmark()
+        bk.user_id = user_id
+        bk.job_id = job_id
+        session.add(bk)
+        session.commit()
+        return sendSuccess("created")
+    except Exception as err:
+        print("error =", err)
+        return sendError("failed")
+
+
+@router.get("/bookmarks")
+async def get_user_bookmarks(request: Request):
+    user_id = request.state.user["id"]
+    try:
+        bookmarks = (
+            session.query(Job).join(Bookmark).filter(Bookmark.user_id == user_id).all()
+        )
+        bookmark_list = []
+        for job in bookmarks:
+            bk_dict = {
+                "id": job.id,
+                "title": job.title,
+                "location": job.location,
+                "expiry": job.expiry,
+                "salary": job.salary,
+                "description": job.description,
+                "requirements": job.requirements,
+                "image": job.image,
+                "type": job.type,
+                "position": job.position,
+                "skills": job.skills,
+                "company": job.company,
+            }
+            bookmark_list.append(bk_dict)
+        return sendSuccess(bookmark_list)
+    except Exception as err:
+        print(err)
+        return sendError(err.args)
+
+
+@router.delete("/bookmarks/{job_id}")
+async def delete_bookmark(job_id: int, request: Request):
+    user_id = request.state.user["id"]
+    try:
+        bookmark = (
+            session.query(Bookmark)
+            .filter(Bookmark.user_id == user_id, Bookmark.job_id == job_id)
+            .first()
+        )
+
+        if bookmark is None:
+            return sendError("not found")
+
+        session.delete(bookmark)
+        session.commit()
+        return sendSuccess("bookmark removed")
+    except Exception as err:
+        print(err)
+        return sendError(err.args)
+
+
+@router.post("/application/{job_id}")
+async def apply_for_job(job_id: int, request: Request):
+    user_id = request.state.user["id"]
+    try:
+        job = (
+            session.query(JobApplication)
+            .filter(JobApplication.job_id == job_id)
+            .first()
+        )
+
+        if job:
+            return sendError("already applied")
+
+        ap = JobApplication()
+        ap.user_id = user_id
+        ap.job_id = job_id
+        ap.status = "pending"
+        session.add(ap)
+        session.commit()
+        return sendSuccess("created")
+    except Exception as err:
+        print("error =", err)
+        return sendError('failed')
+
+
+@router.get("/applications")
+async def get_user_applications(request: Request):
+    user_id = request.state.user['id']
+    try:
+        applications = (
+            session.query(Job).join(JobApplication).filter(JobApplication.user_id == user_id).all()
+        )
+        application_list = []
+        for job in applications:
+            ap_dict = {
+                "id": job.id,
+                "title": job.title,
+                "location": job.location,
+                "expiry": job.expiry,
+                "salary": job.salary,
+                "description": job.description,
+                "requirements": job.requirements,
+                "image": job.image,
+                "type": job.type,
+                "position": job.position,
+                "skills": job.skills,
+                "company": job.company,
+            }
+            application_list.append(ap_dict)
+        return sendSuccess(application_list)
+    except Exception as err:
+        print(err)
+        return sendError("failed")
+
+
+
+@router.delete("/application/{job_id}")
+async def delete_application(job_id: int, request: Request):
+    user_id = request.state.user["id"]
+    try:
+        application = (
+            session.query(JobApplication)
+            .filter(JobApplication.user_id == user_id, JobApplication.job_id == job_id)
+            .first()
+        )
+
+        if application is None:
+            return sendError("not found")
+
+        session.delete(application)
+        session.commit()
+        return sendSuccess("application removed")
+    except Exception as err:
+        print(err)
+        return sendError(err.args)

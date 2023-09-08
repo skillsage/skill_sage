@@ -12,10 +12,12 @@ class JobType(Enum):
 
 class Job(Base):
     __tablename__ = "jobs"
+    id = mapped_column(Integer(), primary_key=True, nullable=False)
     title = mapped_column(String(), nullable=False)
     location = mapped_column(String(), nullable=False)
     expiry = mapped_column(Date(), nullable=False)
     salary = mapped_column(Float(), nullable=False)
+    company = mapped_column(String(), nullable=False)
     description = mapped_column(String(), nullable=False)
     requirements = mapped_column(ARRAY(String()))
     image = mapped_column(String())
@@ -24,6 +26,21 @@ class Job(Base):
     skills = mapped_column(ARRAY(String()))
     user_id = mapped_column(ForeignKey("users.id"))
 
+
+class Bookmark(Base):
+    __tablename__ = "bookmarks"
+    id = mapped_column(Integer(), primary_key=True, nullable=False)
+    user_id = mapped_column(Integer(), ForeignKey("users.id"), nullable=False)
+    job_id = mapped_column(Integer(), ForeignKey("jobs.id"), nullable=False)
+
+
+class JobApplication(Base):
+    __tablename__ = "job_applications"
+    id = mapped_column(Integer(), primary_key=True, index=True)
+    user_id = mapped_column(Integer(), ForeignKey("users.id"), nullable=False)
+    job_id = mapped_column(Integer(), ForeignKey("jobs.id"), nullable=False)
+    status = mapped_column(String(), nullable=False)  # e.g., "pending," "accepted," "rejected"
+    # Add more fields as needed
 
 class Course(Base):
     __tablename__ = "courses"
