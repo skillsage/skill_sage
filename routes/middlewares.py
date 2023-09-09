@@ -5,12 +5,13 @@ from fastapi.responses import JSONResponse
 from models.user import Role
 
 from routes.helpers import sendError
+from typing import List
 
 import jwt
 import os
 
 
-def with_authentication(roles: list[Role]):
+def with_authentication(roles: List[Role]):
     def user_auth(request: Request):
         if "authorization" not in request.headers:
             raise HTTPException(status_code=401, detail="Unauthorized")
