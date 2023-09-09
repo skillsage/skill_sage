@@ -44,7 +44,8 @@ async def register(request: Request, data: RegisterData):
         except:
             session.rollback()
             sendError("rolling back")
-
+        finally: 
+            session.close()
         return sendSuccess(user)
     except Exception as err:
         return sendError(err.args)
