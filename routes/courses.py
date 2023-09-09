@@ -12,10 +12,9 @@ router = APIRouter(
     prefix="/course",
     tags=["course"],
     dependencies=[
-        Depends(with_authentication([Role.JOB_SEEKER, Role.CREATOR, Role.EMPLOYER]))
+        Depends(with_authentication([Role.CREATOR]))
     ],
 )
-
 
 # - crud course
 # - crud course item

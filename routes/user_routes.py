@@ -25,7 +25,7 @@ from pydantic import BaseModel, EmailStr
 router = APIRouter(
     prefix="/user",
     tags=["user"],
-    dependencies=[Depends(with_authentication([Role.JOB_SEEKER, Role.CREATOR]))],
+    dependencies=[Depends(with_authentication([Role.JOB_SEEKER]))],
 )
 
 app_router = APIRouter(

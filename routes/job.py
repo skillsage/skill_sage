@@ -13,7 +13,7 @@ router = APIRouter(
     prefix="/job",
     tags=["job"],
     dependencies=[
-        Depends(with_authentication([Role.JOB_SEEKER, Role.CREATOR, Role.EMPLOYER]))
+        Depends(with_authentication([Role.EMPLOYER]))
     ],
 )
 
