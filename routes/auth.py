@@ -48,7 +48,11 @@ async def register(request: Request, data: RegisterData):
             session.close()
         return sendSuccess(user)
     except Exception as err:
+        session.rollback()
+        print(err)
         return sendError(err.args)
+    finally:
+        session.close()
 
 
 class LoginData(BaseModel):
@@ -83,7 +87,11 @@ async def login(request: Request, data: LoginData):
             else:
                 return sendError("invalid credentials", 400)
     except Exception as err:
+        session.rollback()
+        print(err)
         return sendError(err.args)
+    finally:
+        session.close()
 
 
 def generate_token(data):

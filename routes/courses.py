@@ -51,8 +51,11 @@ async def create_post(request: Request, data: CreateCourseData):
         session.commit()
         return sendSuccess("created")
     except Exception as err:
+        session.rollback()
         print(err)
         return sendError(err.args)
+    finally:
+        session.close()
 
 
 @router.get("/")
@@ -101,7 +104,11 @@ async def get_courses(request: Request):
 
         return sendSuccess(course_data)
     except Exception as err:
+        session.rollback()
+        print(err)
         return sendError(err.args)
+    finally:
+        session.close()
 
 
 @router.get("/{course_id}")
@@ -147,7 +154,11 @@ async def get_details(request: Request, course_id: int):
         return sendSuccess(data)
 
     except Exception as err:
+        session.rollback()
+        print(err)
         return sendError(err.args)
+    finally:
+        session.close()
 
 
 @router.put("/{course_id}")
@@ -180,7 +191,11 @@ async def update_course(course_id: int, data: CreateCourseData):
         session.commit()
         return sendSuccess("Course updated successfully")
     except Exception as err:
+        session.rollback()
+        print(err)
         return sendError(err.args)
+    finally:
+        session.close()
 
 
 @router.delete("/{course_id}")
@@ -196,7 +211,11 @@ async def delete_course(course_id: int):
 
         return sendSuccess("Course deleted successfully")
     except Exception as err:
+        session.rollback()
+        print(err)
         return sendError(err.args)
+    finally:
+        session.close()
 
 
 class CourseItemData(BaseModel):
@@ -224,8 +243,11 @@ async def add_item(request: Request, data: CourseItemData):
         session.commit()
         return sendSuccess("created")
     except Exception as err:
+        session.rollback()
         print(err)
         return sendError(err.args)
+    finally:
+        session.close()
 
 
 class CourseSessionData(BaseModel):
@@ -257,7 +279,11 @@ async def add_session(request: Request, data: CourseSessionData):
         session.commit()
         return sendSuccess("created")
     except Exception as err:
+        session.rollback()
+        print(err)
         return sendError(err.args)
+    finally:
+        session.close()
 
 
 @router.get("/search/{skill}")
@@ -314,4 +340,8 @@ async def get_courses_by_skill(skill: str):
 
         return sendSuccess(course_data)
     except Exception as err:
+        session.rollback()
+        print(err)
         return sendError(err.args)
+    finally:
+        session.close()

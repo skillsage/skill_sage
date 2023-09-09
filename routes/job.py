@@ -61,8 +61,11 @@ async def post_job(request: Request, data: JobData):
         session.commit()
         return sendSuccess("created")
     except Exception as err:
+        session.rollback()
         print(err)
-        return sendError("failed")
+        return sendError(err.args)
+    finally:
+        session.close()
 
 
 @router.put("/")
@@ -103,8 +106,11 @@ async def update_job(request: Request, data: JobData):
         session.commit()
         return sendSuccess("Job updated successfully")
     except Exception as err:
+        session.rollback()
         print(err)
-        return sendError("Unable to update job")
+        return sendError(err.args)
+    finally:
+        session.close()
 
 
 @router.get("/")
@@ -131,8 +137,11 @@ async def get_jobs():
             job_list.append(job_dict)
         return sendSuccess(job_list)
     except Exception as err:
+        session.rollback()
         print(err)
-        return sendError("Failed to retrieve jobs")
+        return sendError(err.args)
+    finally:
+        session.close()
 
 
 @router.delete("/{job_id}")
@@ -150,8 +159,11 @@ async def delete_job(job_id: int, request: Request):
         session.commit()
         return sendSuccess("Job deleted successfully")
     except Exception as err:
+        session.rollback()
         print(err)
-        return sendError("Failed to delete job")
+        return sendError(err.args)
+    finally:
+        session.close()
 
 
 @router.post("/bookmark/{job_id}")
@@ -170,8 +182,11 @@ async def create_bookmark(job_id: int, request: Request):
         session.commit()
         return sendSuccess("created")
     except Exception as err:
-        print("error =", err)
-        return sendError("failed")
+        session.rollback()
+        print(err)
+        return sendError(err.args)
+    finally:
+        session.close()
 
 
 @router.get("/bookmarks")
@@ -200,8 +215,11 @@ async def get_user_bookmarks(request: Request):
             bookmark_list.append(bk_dict)
         return sendSuccess(bookmark_list)
     except Exception as err:
+        session.rollback()
         print(err)
         return sendError(err.args)
+    finally:
+        session.close()
 
 
 @router.delete("/bookmarks/{job_id}")
@@ -221,8 +239,11 @@ async def delete_bookmark(job_id: int, request: Request):
         session.commit()
         return sendSuccess("bookmark removed")
     except Exception as err:
+        session.rollback()
         print(err)
         return sendError(err.args)
+    finally:
+        session.close()
 
 
 @router.post("/application/{job_id}")
@@ -246,8 +267,11 @@ async def apply_for_job(job_id: int, request: Request):
         session.commit()
         return sendSuccess("created")
     except Exception as err:
-        print("error =", err)
-        return sendError("failed")
+        session.rollback()
+        print(err)
+        return sendError(err.args)
+    finally:
+        session.close()
 
 
 @router.get("/applications")
@@ -280,8 +304,11 @@ async def get_user_applications(request: Request):
             application_list.append(ap_dict)
         return sendSuccess(application_list)
     except Exception as err:
+        session.rollback()
         print(err)
-        return sendError("failed")
+        return sendError(err.args)
+    finally:
+        session.close()
 
 
 @router.delete("/application/{job_id}")
@@ -301,8 +328,11 @@ async def delete_application(job_id: int, request: Request):
         session.commit()
         return sendSuccess("application removed")
     except Exception as err:
+        session.rollback()
         print(err)
         return sendError(err.args)
+    finally:
+        session.close()
 
 
 @router.get("/applicants")
@@ -333,8 +363,11 @@ async def get_applicants():
             applicant_list.append(ap_dict)
         return sendSuccess(applicant_list)
     except Exception as err:
+        session.rollback()
         print(err)
         return sendError(err.args)
+    finally:
+        session.close()
 
 
 @router.put("/status")
@@ -352,4 +385,8 @@ async def update_application_status(data: JobApplicationData):
         session.commit()
         return sendSuccess("Status updated")
     except Exception as err:
-        return sendError("failed")
+        session.rollback()
+        print(err)
+        return sendError(err.args)
+    finally:
+        session.close()

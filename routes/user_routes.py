@@ -79,7 +79,10 @@ async def get_user(request: Request):
 
         return sendSuccess(u.to_json())
     except Exception as err:
+        session.rollback()
         return sendFailed(err.args)
+    finally:
+        session.close()
 
 
 # class UpdateUser(BaseModel):
@@ -128,7 +131,10 @@ async def add_experience(request: Request, data: ExperienceData):
         return sendSuccess("created")
     except Exception as err:
         print(err)
+        session.rollback()
         sendError("unable to add experience")
+    finally:
+        session.close()
 
 
 @router.delete("/experience/{id}", status_code=200)
@@ -144,7 +150,10 @@ async def delete_experience(id: str, request: Request):
         session.commit()
         return sendSuccess("deleted")
     except Exception as err:
+        session.rollback()
         return sendError("unable to delete experience")
+    finally:
+        session.close()
 
 
 @router.put("/experience", status_code=200)
@@ -171,8 +180,11 @@ async def update_experience(request: Request, data: ExperienceData):
         session.commit()
         return sendSuccess("saved")
     except Exception as err:
+        session.rollback()
         print(err)
         sendError("unable to update experience")
+    finally:
+        session.close()
 
 
 class EducationData(BaseModel):
@@ -204,7 +216,10 @@ def update_education(request: Request, data: EducationData):
         return sendSuccess("updated")
 
     except Exception as err:
+        session.rollback()
         return sendError("uanle to update education")
+    finally:
+        session.close()
 
 
 @router.delete("/education/{id}")
@@ -223,7 +238,10 @@ def delete_education(request: Request, id: str):
 
         return sendSuccess("deleted")
     except Exception as err:
+        session.rollback()
         return sendError("uanle to update education")
+    finally:
+        session.close()
 
 
 @router.post("/education")
@@ -242,7 +260,10 @@ def add_education(request: Request, data: EducationData):
         session.commit()
         return sendSuccess(ed)
     except Exception as err:
+        session.rollback()
         return sendError("unable to add education")
+    finally:
+        session.close()
 
 
 @router.get("/skill")
@@ -256,10 +277,13 @@ async def get_skills(request: Request):
         )
         return sendSuccess(res)
     except Exception as err:
+        session.rollback()
         print(err)
         return sendError(
             "unable to fetch skills", status.HTTP_500_INTERNAL_SERVER_ERROR
         )
+    finally:
+        session.close()
 
 
 @router.get("/skills")
@@ -274,10 +298,13 @@ async def get_all_skills(request: Request):
 
         return sendSuccess(list(map(lambda x: {"id": x.id, "name": x.name}, res)))
     except Exception as err:
+        session.rollback()
         print(err)
         return sendError(
             "unable to fetch skills", status.HTTP_500_INTERNAL_SERVER_ERROR
         )
+    finally:
+        session.close()
 
 
 @router.get("/recommend_skills")
@@ -302,7 +329,10 @@ async def recommended_skills(request: Request):
         return sendSuccess(recommend(skills, limit))
         # do recommendation
     except Exception as err:
+        session.rollback()
         return sendError(err.args)
+    finally:
+        session.close()
 
 # skill model for request body
 
@@ -332,7 +362,10 @@ async def add_skill(request: Request, data: SkillData):
         session.commit()
         return sendSuccess("skills uploaded")
     except Exception as err:
+        session.rollback()
         return sendError(err.args)
+    finally:
+        session.close()
 
 
 # TODO: remove
@@ -352,7 +385,10 @@ async def create_skill(data: SkillCreate):
 
         return sendSuccess("created")
     except Exception as err:
+        session.rollback()
         return sendError(err.args)
+    finally:
+        session.close()
 
 
 class UpdateProfile(BaseModel):
@@ -386,8 +422,11 @@ async def update_profile(request: Request, data: UpdateProfile):
         return sendSuccess("Profile updated successfully")
 
     except Exception as err:
+        session.rollback()
         print(err)
         return sendError("internal server error", 500)
+    finally:
+        session.close()
 
 
 @router.post("/image", status_code=status.HTTP_201_CREATED)
@@ -412,7 +451,10 @@ async def upload_image(img: UploadFile, request: Request):
         session.commit()
         return sendSuccess("uploaded")
     except Exception as err:
+        session.rollback()
         return sendError(err.args)
+    finally:
+        session.close()
 
     # existing picture
     # yes: delete
@@ -441,8 +483,11 @@ async def upload_resume(file: UploadFile, request: Request):
         session.commit()
         return sendSuccess(f"{file.filename} uploaded")
     except Exception as err:
+        session.rollback()
         print(err)
         return sendError("Internal Server Error", 500)
+    finally:
+        session.close()
 
 
 class DeleteResume(BaseModel):
@@ -468,8 +513,11 @@ async def remove_resume(request: Request, data: DeleteResume):
         session.commit()
         return sendSuccess("deleted")
     except Exception as err:
+        session.rollback()
         print(err)
         return sendError("unable to remove resume")
+    finally:
+        session.close()
 
 
 @app_router.get("/file/{filename}")
@@ -480,5 +528,8 @@ async def stream_file(filename: str, request: Request, resp: Response):
             return sendError("file not found")
         return Response(content=file.data, media_type=file.type)
     except Exception as err:
+        session.rollback()
         print(err)
         return sendError("unable to get file", 500)
+    finally:
+        session.close()
