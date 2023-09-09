@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session, DeclarativeBase, mapped_column
 
 
 DATABASE_URL = "sqlite:///main.sqlite"
-POSTGRES_URL = "postgres://admin:FUacy5LYrKNq9uhf2jEbd2BqJb1B7Fwt@dpg-cju8j97hdsdc739a87bg-a.oregon-postgres.render.com/skill_sage"
+POSTGRES_URL = "postgres://admin:FUacy5LYrKNq9uhf2jEbd2BqJb1B7Fwt@dpg-cju8j97hdsdc739a87bg-a/skill_sage"
 # POSTGRES_URL = "postgresql://localhost:5432/skill_sage?user=postgres&password=admin"
 engine = create_engine(POSTGRES_URL, echo=True)
 
