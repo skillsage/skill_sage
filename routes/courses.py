@@ -5,7 +5,7 @@ from models.job import Course, CourseItem, CourseSession
 from db.connection import session
 from pydantic import BaseModel, EmailStr
 from .helpers import sendError, sendSuccess
-from typing import List
+from typing import List, Optional
 from sqlalchemy.orm import joinedload
 
 router = APIRouter(
@@ -28,7 +28,7 @@ class CreateCourseData(BaseModel):
     requirements: List[str]
     lessons: List[str]
     skills: List[str]
-    image: str | None
+    image: Optional[str] = None
     isActive: bool
 
 

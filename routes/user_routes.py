@@ -85,10 +85,10 @@ class ExperienceData(BaseModel):
     company_name: str
     job_title: str
     start_date: datetime.date
-    end_date: datetime.date | None = None
+    end_date: Optional[datetime.date] = None
     is_remote: bool = False
     has_completed: bool = False
-    tasks: str | None = None
+    tasks: Optional[str] = None
 
 
 @router.post("/experience", status_code=status.HTTP_201_CREATED)
@@ -156,7 +156,7 @@ class EducationData(BaseModel):
     program: str
     institution: str
     start_date: datetime.date
-    end_date: datetime.date | None
+    end_date: Optional[datetime.date] = None
     has_completed: bool = False
 
 

@@ -19,19 +19,19 @@ router = APIRouter(
 
 
 class JobData(BaseModel):
-    id: Optional[int] | None = None
-    title: str | None = None
+    id: Optional[int] = None
+    title: Optional[str] = None
     description: str
-    requirements: list[str] | None = None
-    skills: list[str] | None = None
-    position: str | None = None
-    image: str | None = None
-    location: str | None = None
-    position: str | None = None
-    expiry: datetime.date | None = None
-    salary: float | None = None
-    type: str | None = None
-    company: str | None = None
+    requirements: Optional[List[str]] = None
+    skills: Optional[List[str]] = None
+    position: Optional[str]= None
+    image: Optional[str] = None
+    location: Optional[str] = None
+    position: Optional[str] = None
+    expiry: Optional[datetime.date] = None
+    salary: Optional[float] = None
+    type: Optional[str] = None
+    company: Optional[str] = None
 
 
 class JobApplicationData(BaseModel):
