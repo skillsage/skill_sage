@@ -231,7 +231,7 @@ async def add_item(request: Request, data: CourseItemData):
 class CourseSessionData(BaseModel):
     name: str
     video: str
-    time: str | None
+    time: Optional[str] = None
     item_id: int
 
 
