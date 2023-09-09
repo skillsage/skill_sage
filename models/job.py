@@ -55,7 +55,6 @@ class Course(Base):
     image = mapped_column(String())
     isActive = mapped_column(Boolean(), default=False)
     items = relationship("CourseItem", back_populates="course")
-    # items = []
 
 
 class CourseItem(Base):
@@ -63,6 +62,7 @@ class CourseItem(Base):
     course_id = mapped_column(ForeignKey("courses.id"))
     name = mapped_column(String(), nullable=False)
     course = relationship("Course", back_populates="items")
+    sessions = relationship("CourseSession", back_populates="item")
 
 
 class CourseSession(Base):
@@ -71,3 +71,4 @@ class CourseSession(Base):
     name = mapped_column(String(), nullable=False)
     video = mapped_column(String(), nullable=False)
     time = mapped_column(String())
+    item = relationship("CourseItem", back_populates="sessions")

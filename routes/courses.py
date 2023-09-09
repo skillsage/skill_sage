@@ -6,6 +6,7 @@ from db.connection import session
 from pydantic import BaseModel, EmailStr
 from .helpers import sendError, sendSuccess
 from typing import List
+from sqlalchemy.orm import joinedload
 
 router = APIRouter(
     prefix="/course",
@@ -28,6 +29,8 @@ class CreateCourseData(BaseModel):
     lessons: List[str]
     skills: List[str]
     image: str | None
+    isActive: bool
+
 
 @router.post("/")
 async def create_post(request: Request, data: CreateCourseData):
@@ -51,12 +54,52 @@ async def create_post(request: Request, data: CreateCourseData):
         print(err)
         return sendError(err.args)
 
+
 @router.get("/")
 async def get_courses(request: Request):
     user_id = request.state.user["id"]
     try:
-        data = session.query(Course).filter(Course.user_id == user_id).all()
-        return sendSuccess(data)
+        courses = (
+            session.query(Course)
+            .filter(Course.user_id == user_id)
+            .outerjoin(CourseItem)  
+            .outerjoin(CourseSession) 
+            .all()
+        )
+
+        course_data = []
+        for course in courses:
+            course_dict = {
+                "id": course.id,
+                "title": course.title,
+                "sub_title": course.sub_title,
+                "description": course.description,
+                "requirements": course.requirements,
+                "skills": course.skills,
+                "image": course.image,
+                "items": [],
+            }
+
+            for item in course.items:
+                item_dict = {
+                    "id": item.id,
+                    "name": item.name,
+                    "sessions": [],  
+                }
+
+                for s in item.sessions:
+                    session_dict = {
+                        "id": s.id,
+                        "name": s.name,
+                        "video": s.video,
+                    }
+                    item_dict["sessions"].append(session_dict)
+
+                course_dict["items"].append(item_dict)
+
+            course_data.append(course_dict)
+
+        return sendSuccess(course_data)
     except Exception as err:
         return sendError(err.args)
 
@@ -70,33 +113,90 @@ async def get_details(request: Request, course_id: int):
             .filter(Course.id == course_id, Course.user_id == user_id)
             .first()
         )
-        data: list[map[str:any]] = []
-        items = (
-            session.query(CourseItem).filter(CourseItem.course_id == course.id).all()
-        )
 
-        for i in items:
-            s = session.query(CourseSession).filter(CourseSession.item_id == i.id).all()
-            data.append(
+        if not course:
+            return sendError("Course not found")
+
+        items = course.items
+        data = {
+            "course": {
+                "title": course.title,
+                "sub_title": course.sub_title,
+                "requirements": course.requirements,
+                "skills": course.skills,
+                "lessons": course.lessons,
+            },
+            "items": [],
+        }
+
+        for item in items:
+            sessions = item.sessions
+            data["items"].append(
                 {
-                    "name": i.name,
-                    "sessions": list(
-                        map(
-                            lambda x: {
-                                "name": x.name,
-                                "video": x.video,
-                            },
-                            s,
-                        )
-                    ),
+                    "name": item.name,
+                    "sessions": [
+                        {
+                            "name": session.name,
+                            "video": session.video,
+                        }
+                        for session in sessions
+                    ],
                 }
             )
-        course.items = data
 
-        return sendSuccess(course)
+        return sendSuccess(data)
 
-    except:
-        return sendError("Error")
+    except Exception as err:
+        return sendError(err.args)
+
+
+@router.put("/{course_id}")
+async def update_course(course_id: int, data: CreateCourseData):
+    try:
+        course = session.query(Course).filter(Course.id == course_id).first()
+
+        if course is None:
+            raise HTTPException(status_code=404, detail="Course not found")
+
+        if course.title is not None:
+            course.title = data.title
+        if course.sub_title is not None:
+            course.sub_title = data.sub_title
+        if course.description is not None:
+            course.description = data.description
+        if course.language is not None:
+            course.language = data.language
+        if course.requirements is not None:
+            course.requirements = data.requirements
+        if course.lessons is not None:
+            course.lessons = data.lessons
+        if course.skills is not None:
+            course.skills = data.skills
+        if course.image is not None:
+            course.image = data.image
+        if course.isActive is not None:
+            course.isActive = data.isActive
+
+        session.commit()
+        return sendSuccess("Course updated successfully")
+    except Exception as err:
+        return sendError(err.args)
+
+
+@router.delete("/{course_id}")
+async def delete_course(course_id: int):
+    try:
+        course = session.query(Course).filter(Course.id == course_id).first()
+
+        if course is None:
+            raise HTTPException(status_code=404, detail="Course not found")
+
+        session.delete(course)
+        session.commit()
+
+        return sendSuccess("Course deleted successfully")
+    except Exception as err:
+        return sendError(err.args)
 
 
 class CourseItemData(BaseModel):
@@ -110,9 +210,10 @@ async def add_item(request: Request, data: CourseItemData):
     try:
         count = (
             session.query(Course)
-            .filter(Course.id == id, Course.user_id == user_id)
+            .filter(Course.id == data.course_id, Course.user_id == user_id)
             .count()
         )
+
         if count < 1:
             return sendError("Error")
 
@@ -124,7 +225,7 @@ async def add_item(request: Request, data: CourseItemData):
         return sendSuccess("created")
     except Exception as err:
         print(err)
-        return sendError("failed")
+        return sendError(err.args)
 
 
 class CourseSessionData(BaseModel):
@@ -155,5 +256,62 @@ async def add_session(request: Request, data: CourseSessionData):
         session.add(s)
         session.commit()
         return sendSuccess("created")
-    except:
-        return sendError("failed")
+    except Exception as err:
+        return sendError(err.args)
+
+
+@router.get("/search/{skill}")
+async def get_courses_by_skill(skill: str):
+    try:
+        courses = (
+            session.query(Course)
+            .filter(
+                Course.skills.any(skill) 
+            )
+            .options(
+                joinedload(Course.items)  # Eagerly load the 'items' relationship
+                .joinedload(CourseItem.sessions)  # Eagerly load the 'sessions' relationship within 'items'
+            )
+            .all()
+        )
+
+        course_data = []
+        for course in courses:
+            course_dict = {
+                "id": course.id,
+                "title": course.title,
+                "sub_title": course.sub_title,
+                "description": course.description,
+                "requirements": course.requirements,
+                "skills": course.skills,
+                "image": course.image,
+                "language": course.language,
+                "lessons": course.lessons,
+                "items": [],
+            }
+
+            for item in course.items:
+                item_dict = {
+                    "id": item.id,
+                    "name": item.name,
+                    "sessions": [],  # Initialize sessions list
+                }
+
+                for s in item.sessions:
+                    session_dict = {
+                        "id": s.id,
+                        "name": s.name,
+                        "video": s.video,
+                    }
+
+                    # Append the session data to the 'sessions' list within the 'item' dictionary
+                    item_dict["sessions"].append(session_dict)
+
+                # Append the 'item' dictionary to the 'items' list within the 'course' dictionary
+                course_dict["items"].append(item_dict)
+
+            course_data.append(course_dict)
+
+        return sendSuccess(course_data)
+    except Exception as err:
+        return sendError(err.args)
