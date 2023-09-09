@@ -2,6 +2,7 @@ from fastapi import APIRouter, Request, Depends, status, UploadFile, Response
 from .middlewares import with_authentication
 from models.user import Role
 from models.job import Job, Bookmark, JobApplication
+from models.user import User
 from db.connection import session
 from pydantic import BaseModel, EmailStr
 from .helpers import sendError, sendSuccess
@@ -31,6 +32,12 @@ class JobData(BaseModel):
     salary: float | None = None
     type: str | None = None
     company: str | None = None
+
+
+class JobApplicationData(BaseModel):
+    status: str
+    user_id: int
+    job_id: int
 
 
 @router.post("/")
@@ -240,18 +247,21 @@ async def apply_for_job(job_id: int, request: Request):
         return sendSuccess("created")
     except Exception as err:
         print("error =", err)
-        return sendError('failed')
+        return sendError("failed")
 
 
 @router.get("/applications")
 async def get_user_applications(request: Request):
-    user_id = request.state.user['id']
+    user_id = request.state.user["id"]
     try:
         applications = (
-            session.query(Job).join(JobApplication).filter(JobApplication.user_id == user_id).all()
+            session.query(Job, JobApplication.status)
+            .join(JobApplication)
+            .filter(JobApplication.user_id == user_id)
+            .all()
         )
         application_list = []
-        for job in applications:
+        for job, status in applications:
             ap_dict = {
                 "id": job.id,
                 "title": job.title,
@@ -265,13 +275,13 @@ async def get_user_applications(request: Request):
                 "position": job.position,
                 "skills": job.skills,
                 "company": job.company,
+                "status": status
             }
             application_list.append(ap_dict)
         return sendSuccess(application_list)
     except Exception as err:
         print(err)
         return sendError("failed")
-
 
 
 @router.delete("/application/{job_id}")
@@ -293,3 +303,53 @@ async def delete_application(job_id: int, request: Request):
     except Exception as err:
         print(err)
         return sendError(err.args)
+
+
+@router.get("/applicants")
+async def get_applicants():
+    try:
+        applicants = (
+            session.query(User, Job, JobApplication.status)
+            .join(JobApplication, User.id == JobApplication.user_id)
+            .join(Job, Job.id == JobApplication.job_id)
+            .all()
+        )
+        applicant_list = []
+        print(applicants)
+        for applicant, job, status in applicants:
+            ap_dict = {
+                "id": applicant.id,
+                "skills": applicant.skills,
+                "resume": applicant.resume,
+                "name": applicant.name,
+                "email": applicant.email,
+                "experiences": applicant.experiences,
+                "education": applicant.education,
+                "img": applicant.profile_image,
+                "job_id": job.id,
+                "job_title": job.title,
+                "status": status,
+            }
+            applicant_list.append(ap_dict)
+        return sendSuccess(applicant_list)
+    except Exception as err:
+        print(err)
+        return sendError(err.args)
+
+
+@router.put("/status")
+async def update_application_status(data: JobApplicationData):
+    try:
+        app = (
+            session.query(JobApplication)
+            .filter(
+                JobApplication.user_id == data.user_id,
+                JobApplication.job_id == data.job_id,
+            )
+            .first()
+        )
+        app.status = data.status
+        session.commit()
+        return sendSuccess("Status updated")
+    except Exception as err:
+        return sendError("failed")

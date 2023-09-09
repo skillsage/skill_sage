@@ -51,21 +51,22 @@ class Course(Base):
     language = mapped_column(String())
     requirements = mapped_column(ARRAY(String()), default=[])
     lessons = mapped_column(ARRAY(String()))
-    skills = mapped_column(ARRAY(String))
+    skills = mapped_column(ARRAY(String()))
     image = mapped_column(String())
     isActive = mapped_column(Boolean(), default=False)
-
-    items = []
+    items = relationship("CourseItem", back_populates="course")
+    # items = []
 
 
 class CourseItem(Base):
     __tablename__ = "course_items"
     course_id = mapped_column(ForeignKey("courses.id"))
     name = mapped_column(String(), nullable=False)
+    course = relationship("Course", back_populates="items")
 
 
 class CourseSession(Base):
-    __tablename__ = "course_sesions"
+    __tablename__ = "course_sessions"
     item_id = mapped_column(ForeignKey("course_items.id"))
     name = mapped_column(String(), nullable=False)
     video = mapped_column(String(), nullable=False)

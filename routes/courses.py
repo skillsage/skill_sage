@@ -1,14 +1,19 @@
 from fastapi import APIRouter, Request, Depends, status, UploadFile, Response
 from .middlewares import with_authentication
 from models.user import Role
-from models.job import Job, Course, CourseItem, CourseSession
+from models.job import Course, CourseItem, CourseSession
 from db.connection import session
 from pydantic import BaseModel, EmailStr
 from .helpers import sendError, sendSuccess
 from typing import List
 
-router = APIRouter(prefix="/course", tags=["course"], dependencies=[
-                   Depends(with_authentication([Role.CREATOR]))])
+router = APIRouter(
+    prefix="/course",
+    tags=["course"],
+    dependencies=[
+        Depends(with_authentication([Role.JOB_SEEKER, Role.CREATOR, Role.EMPLOYER]))
+    ],
+)
 
 
 # - crud course
@@ -19,11 +24,10 @@ class CreateCourseData(BaseModel):
     sub_title: str
     description: str
     language: str
-    requirements: list[str]
-    lessons: list[str]
-    skills: list[str]
+    requirements: List[str]
+    lessons: List[str]
+    skills: List[str]
     image: str | None
-
 
 @router.post("/")
 async def create_post(request: Request, data: CreateCourseData):
@@ -45,36 +49,48 @@ async def create_post(request: Request, data: CreateCourseData):
         return sendSuccess("created")
     except Exception as err:
         print(err)
-        return sendError("failed")
-
+        return sendError(err.args)
 
 @router.get("/")
 async def get_courses(request: Request):
     user_id = request.state.user["id"]
-    data = session.query(Course).filter(Course.user_id == user_id).all()
-    return data
+    try:
+        data = session.query(Course).filter(Course.user_id == user_id).all()
+        return sendSuccess(data)
+    except Exception as err:
+        return sendError(err.args)
 
 
 @router.get("/{course_id}")
 async def get_details(request: Request, course_id: int):
     user_id = request.state.user["id"]
     try:
-        course = session.query(Course).filter(
-            Course.id == course_id, Course.user_id == user_id).first()
-        data: list[map[str: any]] = []
-        items = session.query(CourseItem).filter(
-            CourseItem.course_id == course.id).all()
+        course = (
+            session.query(Course)
+            .filter(Course.id == course_id, Course.user_id == user_id)
+            .first()
+        )
+        data: list[map[str:any]] = []
+        items = (
+            session.query(CourseItem).filter(CourseItem.course_id == course.id).all()
+        )
 
         for i in items:
-            s = session.query(CourseSession).filter(
-                CourseSession.item_id == i.id).all()
-            data.append({
-                "name": i.name,
-                "sessions": list(map(lambda x: {
-                    "name": x.name,
-                    "video": x.video,
-                }, s))
-            })
+            s = session.query(CourseSession).filter(CourseSession.item_id == i.id).all()
+            data.append(
+                {
+                    "name": i.name,
+                    "sessions": list(
+                        map(
+                            lambda x: {
+                                "name": x.name,
+                                "video": x.video,
+                            },
+                            s,
+                        )
+                    ),
+                }
+            )
         course.items = data
 
         return sendSuccess(course)
@@ -92,8 +108,11 @@ class CourseItemData(BaseModel):
 async def add_item(request: Request, data: CourseItemData):
     user_id = request.state.user["id"]
     try:
-        count = session.query(Course).filter(
-            Course.id == id, Course.user_id == user_id).count()
+        count = (
+            session.query(Course)
+            .filter(Course.id == id, Course.user_id == user_id)
+            .count()
+        )
         if count < 1:
             return sendError("Error")
 
@@ -119,8 +138,12 @@ class CourseSessionData(BaseModel):
 async def add_session(request: Request, data: CourseSessionData):
     try:
         user_id = request.state.user["id"]
-        c = session.query(Course).join(CourseItem).where(
-            Course.user_id == user_id, CourseItem.id == data.item_id).count()
+        c = (
+            session.query(Course)
+            .join(CourseItem)
+            .where(Course.user_id == user_id, CourseItem.id == data.item_id)
+            .count()
+        )
         if c < 1:
             return sendError("item not found")
 
