@@ -1,6 +1,7 @@
 from datetime import datetime
 from sqlalchemy import create_engine, Integer, DateTime
 from sqlalchemy.orm import Session, DeclarativeBase, mapped_column
+from typing import List
 
 
 DATABASE_URL = "sqlite:///main.sqlite"
@@ -41,7 +42,7 @@ class node:
         return str(self.average())
 
 
-def recommend(skills: list[str], take: int = 20):
+def recommend(skills: List[str], take: int = 20):
     cur = engine.raw_connection().cursor()
 
     fq = f"""
