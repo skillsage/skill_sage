@@ -22,29 +22,32 @@ class RegisterData(BaseModel):
 
 @auth_router.post("/register", status_code=status.HTTP_201_CREATED)
 async def register(request: Request, data: RegisterData):
-    existing_users = session.query(User).filter(
-        User.email == data.email).count()
-    print("existing", existing_users)
-    if existing_users:
-        return sendError("user already exists")
-
-    password = data.password.encode("utf-8")
-    hashed_password = bcrypt.hashpw(password, bcrypt.gensalt())
-    print(hashed_password)
-    user = User(data.name, data.email, bytes.decode(
-        hashed_password, "utf-8"), Role.JOB_SEEKER)
     try:
-        profile = JobSeeker()
-        session.add(profile)
-        session.flush()
-        user.profile_id = profile.id
-        session.add(user)
-        session.commit()
-    except:
-        session.rollback()
-        sendError("rolling back")
+        existing_users = session.query(User).filter(
+            User.email == data.email).count()
+        print("existing", existing_users)
+        if existing_users:
+            return sendError("user already exists")
 
-    return sendSuccess(user)
+        password = data.password.encode("utf-8")
+        hashed_password = bcrypt.hashpw(password, bcrypt.gensalt())
+        print(hashed_password)
+        user = User(data.name, data.email, bytes.decode(
+            hashed_password, "utf-8"), Role.JOB_SEEKER)
+        try:
+            profile = JobSeeker()
+            session.add(profile)
+            session.flush()
+            user.profile_id = profile.id
+            session.add(user)
+            session.commit()
+        except:
+            session.rollback()
+            sendError("rolling back")
+
+        return sendSuccess(user)
+    except Exception as err:
+        return sendError(err.args)
 
 
 class LoginData(BaseModel):
@@ -54,29 +57,32 @@ class LoginData(BaseModel):
 
 @auth_router.post("/login")
 async def login(request: Request, data: LoginData):
-    user = session.query(User).join(JobSeeker).filter(
-        User.email == data.email).first()
-    if user is None:
-        return sendError("not found")
+    try:
+        user = session.query(User).join(JobSeeker).filter(
+            User.email == data.email).first()
+        if user is None:
+            return sendError("not found")
 
-    user = session.query(User).join(JobSeeker).filter(
-        User.email == data.email).first()
+        user = session.query(User).join(JobSeeker).filter(
+            User.email == data.email).first()
 
-    print("user is ", user.password)
-    if user is not None:
-        if bcrypt.checkpw(data.password.encode("utf-8"), user.password.encode("utf-8")):
-            token = generate_token(
-                {
-                    "id": user.id,
-                    "seeker_id": user.profile.id,
-                    "email": user.email,
-                    "role": user.role,
-                    "exp": datetime.datetime.now(tz=datetime.timezone.utc)
-                    + datetime.timedelta(hours=24),
-                })
-            return sendSuccess({"token": token, "user": user.to_json()})
-        else:
-            return sendError("invalid credentials", 400)
+        print("user is ", user.password)
+        if user is not None:
+            if bcrypt.checkpw(data.password.encode("utf-8"), user.password.encode("utf-8")):
+                token = generate_token(
+                    {
+                        "id": user.id,
+                        "seeker_id": user.profile.id,
+                        "email": user.email,
+                        "role": user.role,
+                        "exp": datetime.datetime.now(tz=datetime.timezone.utc)
+                        + datetime.timedelta(hours=24),
+                    })
+                return sendSuccess({"token": token, "user": user.to_json()})
+            else:
+                return sendError("invalid credentials", 400)
+    except Exception as err:
+        return sendError(err.args)
 
 
 def generate_token(data):
