@@ -26,6 +26,7 @@ def with_authentication(roles: List[Role]):
             print(err)
             raise HTTPException(status_code=401, detail="Invalid token")
 
+        print(roles, data["role"])
         for role in roles:
             print("give a pass", roles, data)
             if role == data["role"]:

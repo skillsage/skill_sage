@@ -1,7 +1,17 @@
 # import the Base from the conection.py
 from db.connection import Base
 from sqlalchemy.orm import mapped_column, relationship, Mapped
-from sqlalchemy import String, Boolean, LargeBinary, JSON, Enum, ForeignKey, Integer, Date, JSON
+from sqlalchemy import (
+    String,
+    Boolean,
+    LargeBinary,
+    JSON,
+    Enum,
+    ForeignKey,
+    Integer,
+    Date,
+    JSON,
+)
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy.dialects.postgresql import JSONB
 from typing import List
@@ -93,13 +103,13 @@ class JobSeekerSkill(Base):
     skill_id = mapped_column(ForeignKey("skills.id"))
     user_id = mapped_column(ForeignKey("users.id"))
 
-    skill:  Mapped["Skill"] = relationship("Skill")
+    skill: Mapped["Skill"] = relationship("Skill")
 
 
 class Experience(Base):
     __tablename__ = "experiences"
 
-    user_id = mapped_column(Integer(), ForeignKey('users.id'))
+    user_id = mapped_column(Integer(), ForeignKey("users.id"))
     company_name = mapped_column(String(), nullable=False)
     job_title = mapped_column(String(), nullable=False)
     start_date = mapped_column(Date(), nullable=False)
@@ -114,7 +124,7 @@ class Experience(Base):
 class Education(Base):
     __tablename__ = "educations"
 
-    user_id = mapped_column(Integer(), ForeignKey('users.id'))
+    user_id = mapped_column(Integer(), ForeignKey("users.id"))
     program = mapped_column(String(), nullable=False)
     institution = mapped_column(String(), nullable=False)
     start_date = mapped_column(Date(), nullable=False)
