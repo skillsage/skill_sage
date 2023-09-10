@@ -12,7 +12,7 @@ router = APIRouter(
     prefix="/course",
     tags=["course"],
     dependencies=[
-        Depends(with_authentication([Role.CREATOR]))
+        Depends(with_authentication([Role.CREATOR, Role.ADMIN]))
     ],
 )
 
