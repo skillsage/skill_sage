@@ -20,7 +20,7 @@ class RegisterData(BaseModel):
     password: constr(min_length=6)
 
 
-token_db = set()
+# token_db = set()
 
 @auth_router.post("/register", status_code=status.HTTP_201_CREATED)
 async def register(request: Request, data: RegisterData):
@@ -85,7 +85,7 @@ async def login(request: Request, data: LoginData):
                         "exp": datetime.datetime.now(tz=datetime.timezone.utc)
                         + datetime.timedelta(hours=24),
                     })
-                token_db.add(token)
+                # token_db.add(token)
                 return sendSuccess({"token": token, "user": user.to_json()})
             else:
                 return sendError("invalid credentials", 400)
@@ -104,16 +104,16 @@ def generate_token(data):
         algorithm="HS256",
     )
 
-@auth_router.post("/logout", response_model=dict)
-async def logout(token: str):
-    try:
-        """
-        Logout by invalidating the user's token.
-        """
-        if token in token_db:
-            token_db.remove(token)
-            return {"message": "Logout successful"}
-        else:
-            return sendError("Token not found or already expired", 401)
-    except Exception as err:
-        return sendError(err.args)
+# @auth_router.post("/logout", response_model=dict)
+# async def logout(token: str):
+#     try:
+#         """
+#         Logout by invalidating the user's token.
+#         """
+#         if token in token_db:
+#             token_db.remove(token)
+#             return {"message": "Logout successful"}
+#         else:
+#             return sendError("Token not found or already expired", 401)
+#     except Exception as err:
+#         return sendError(err.args)
