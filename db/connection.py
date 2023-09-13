@@ -6,7 +6,9 @@ from typing import List
 
 DATABASE_URL = "sqlite:///main.sqlite"
 # POSTGRES_URL = "postgresql://postgres:Hyxt1ZY0elg7aS07Ykl4@containers-us-west-118.railway.app:5778/railway"
-POSTGRES_URL = "postgresql://143.198.235.166:5432/skill_sage?user=admin&password=admin"
+# POSTGRES_URL = "postgresql://143.198.235.166:5432/skill_sage?user=admin&password=admin"
+POSTGRES_URL = "postgresql://skillsage:skillsage@skill-sage.c9xcjxxsg3qg.eu-north-1.rds.amazonaws.com:5432/skill-sage"
+
 engine = create_engine(POSTGRES_URL, echo=True)
 
 session = Session(bind=engine, autoflush=False, autocommit=False)
