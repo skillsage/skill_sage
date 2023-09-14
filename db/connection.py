@@ -2,6 +2,7 @@ from datetime import datetime
 from sqlalchemy import create_engine, Integer, DateTime
 from sqlalchemy.orm import Session, DeclarativeBase, mapped_column
 from typing import List
+from routes.helpers import sendError
 
 
 DATABASE_URL = "sqlite:///main.sqlite"
@@ -22,6 +23,7 @@ class Base(DeclarativeBase):
 
 def initDB():
     Base.metadata.create_all(bind=engine)
+
 
 # RECOMMENDATION
 
@@ -45,45 +47,53 @@ class node:
 
 
 def recommend(skills: List[str], take: int = 20):
-    cur = engine.raw_connection().cursor()
+    try:
+        cur = engine.raw_connection().cursor()
 
-    fq = f"""
-    SELECT skill, factor from skill_factors WHERE skill IN %s LIMIT 1;
-    """
-    cur.execute(fq, (tuple(skills),))
-    factor_records = cur.fetchall()
-    factors: dict[str, dict[str, int]] = dict()
-    for item in factor_records:
-        if item is not None:
-            factors[item[0]] = item[1]
+        fq = f"""
+        SELECT skill, factor from skill_factors WHERE skill IN %s LIMIT 1;
+        """
+        cur.execute(fq, (tuple(skills),))
+        factor_records = cur.fetchall()
+        factors: dict[str, dict[str, int]] = dict()
+        for item in factor_records:
+            if item is not None:
+                factors[item[0]] = item[1]
 
-    pairs = dict()
-    for skill in skills:
-        if skill not in factors:
-            continue
-        for k, v in factors[skill].items():
-            # key = skill, value = factor
-            if k not in pairs:
-                pairs[k] = node()
-                pairs[k].add(v)
-            else:
-                pairs[k].add(v)
+        pairs = dict()
+        for skill in skills:
+            if skill not in factors:
+                continue
+            for k, v in factors[skill].items():
+                # key = skill, value = factor
+                if k not in pairs:
+                    pairs[k] = node()
+                    pairs[k].add(v)
+                else:
+                    pairs[k].add(v)
 
-    pair_list = list()
-    for k, v in pairs.items():
-        pair_list.append({"skill": k, "average": v.average()})
+        pair_list = list()
+        for k, v in pairs.items():
+            pair_list.append({"skill": k, "average": v.average()})
 
-    result = list(
-        map(
-            lambda x: x["skill"],
-            sorted(pair_list, key=lambda x: x["average"], reverse=True),
+        result = list(
+            map(
+                lambda x: x["skill"],
+                sorted(pair_list, key=lambda x: x["average"], reverse=True),
+            )
         )
-    )
 
-    clean = list(filter(lambda x: x not in skills, result))[:take]
-    pq = f"""
-        SELECT name FROM skills WHERE lower IN %s;
-    """
-    cur.execute(pq, (tuple(clean),))
-    pair_records = cur.fetchall()
-    return list(map(lambda x: x[0], pair_records))
+        clean = list(filter(lambda x: x not in skills, result))[:take]
+        pq = f"""
+            SELECT name FROM skills WHERE lower IN %s;
+        """
+        cur.execute(pq, (tuple(clean),))
+        pair_records = cur.fetchall()
+        return list(map(lambda x: x[0], pair_records))
+
+    except Exception as err:
+        print(err)
+        session.rollback()
+        sendError("failed")
+    finally:
+        session.close()
