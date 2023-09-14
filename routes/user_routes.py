@@ -25,7 +25,11 @@ from pydantic import BaseModel, EmailStr
 router = APIRouter(
     prefix="/user",
     tags=["user"],
-    dependencies=[Depends(with_authentication([Role.JOB_SEEKER, Role.ADMIN, Role.ADMIN, Role.CREATOR]))],
+    dependencies=[
+        Depends(
+            with_authentication([Role.JOB_SEEKER, Role.ADMIN, Role.ADMIN, Role.CREATOR])
+        )
+    ],
 )
 
 app_router = APIRouter(
@@ -334,6 +338,7 @@ async def recommended_skills(request: Request):
     finally:
         session.close()
 
+
 # skill model for request body
 
 
@@ -346,7 +351,9 @@ async def add_skill(request: Request, data: SkillData):
     user_id = request.state.user["id"]
     try:
         exist = (
-            session.query(JobSeekerSkill).filter(JobSeekerSkill.user_id == user_id).all()
+            session.query(JobSeekerSkill)
+            .filter(JobSeekerSkill.user_id == user_id)
+            .all()
         )
         for i in exist:
             session.delete(i)
@@ -444,7 +451,9 @@ async def upload_image(img: UploadFile, request: Request):
         ext = ex_chunk[len(ex_chunk) - 1 :][0]
         filename = str(uuid.uuid4()) + "." + ext
         print(filename, ext, sep=" |  ")
-        dbImg = File(data=new_file, filename=filename, type=img.content_type, sha=fileSha)
+        dbImg = File(
+            data=new_file, filename=filename, type=img.content_type, sha=fileSha
+        )
         session.add(dbImg)
         user.profile_image = filename
 

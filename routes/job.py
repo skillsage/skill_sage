@@ -17,6 +17,14 @@ router = APIRouter(
     ],
 )
 
+app_router = APIRouter(
+    prefix="/job",
+    tags=["job"],
+    dependencies=[
+        Depends(with_authentication([Role.CREATOR, Role.ADMIN, Role.JOB_SEEKER, Role.EMPLOYER, Role.ANALYST]))
+    ],
+)
+
 
 class JobData(BaseModel):
     id: Optional[int] = None
@@ -113,7 +121,7 @@ async def update_job(request: Request, data: JobData):
         session.close()
 
 
-@router.get("/")
+@app_router.get("/")
 async def get_jobs():
     try:
         jobs = session.query(Job).all()
@@ -189,7 +197,7 @@ async def create_bookmark(job_id: int, request: Request):
         session.close()
 
 
-@router.get("/bookmarks")
+@app_router.get("/bookmarks")
 async def get_user_bookmarks(request: Request):
     user_id = request.state.user["id"]
     try:
@@ -274,7 +282,7 @@ async def apply_for_job(job_id: int, request: Request):
         session.close()
 
 
-@router.get("/applications")
+@app_router.get("/applications")
 async def get_user_applications(request: Request):
     user_id = request.state.user["id"]
     try:

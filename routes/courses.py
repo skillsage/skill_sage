@@ -16,6 +16,14 @@ router = APIRouter(
     ],
 )
 
+app_router = APIRouter(
+    prefix="/course",
+    tags=["course"],
+    dependencies=[
+        Depends(with_authentication([Role.CREATOR, Role.ADMIN, Role.JOB_SEEKER, Role.EMPLOYER, Role.ANALYST]))
+    ],
+)
+
 # - crud course
 # - crud course item
 # - crud course lession
@@ -57,7 +65,7 @@ async def create_post(request: Request, data: CreateCourseData):
         session.close()
 
 
-@router.get("/")
+@app_router.get("/")
 async def get_courses(request: Request):
     user_id = request.state.user["id"]
     try:
@@ -110,7 +118,7 @@ async def get_courses(request: Request):
         session.close()
 
 
-@router.get("/{course_id}")
+@app_router.get("/{course_id}")
 async def get_details(request: Request, course_id: int):
     user_id = request.state.user["id"]
     try:
@@ -285,7 +293,7 @@ async def add_session(request: Request, data: CourseSessionData):
         session.close()
 
 
-@router.get("/search/{skill}")
+@app_router.get("/search/{skill}")
 async def get_courses_by_skill(skill: str):
     try:
         courses = (
