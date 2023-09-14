@@ -230,7 +230,7 @@ async def get_user_bookmarks(request: Request):
         session.close()
 
 
-@router.delete("/bookmarks/{job_id}")
+@app_router.delete("/bookmarks/{job_id}")
 async def delete_bookmark(job_id: int, request: Request):
     user_id = request.state.user["id"]
     try:
@@ -319,7 +319,7 @@ async def get_user_applications(request: Request):
         session.close()
 
 
-@router.delete("/application/{job_id}")
+@app_router.delete("/application/{job_id}")
 async def delete_application(job_id: int, request: Request):
     user_id = request.state.user["id"]
     try:
