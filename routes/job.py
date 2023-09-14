@@ -174,7 +174,7 @@ async def delete_job(job_id: int, request: Request):
         session.close()
 
 
-@router.post("/bookmark/{job_id}")
+@app_router.post("/bookmark/{job_id}")
 async def create_bookmark(job_id: int, request: Request):
     user_id = request.state.user["id"]
     try:
@@ -254,7 +254,7 @@ async def delete_bookmark(job_id: int, request: Request):
         session.close()
 
 
-@router.post("/application/{job_id}")
+@app_router.post("/application/{job_id}")
 async def apply_for_job(job_id: int, request: Request):
     user_id = request.state.user["id"]
     try:
