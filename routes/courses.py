@@ -323,6 +323,7 @@ async def get_courses_by_skill(skill: str):
                 "image": course.image,
                 "language": course.language,
                 "lessons": course.lessons,
+                "time": course.time,
                 "items": [],
             }
 
