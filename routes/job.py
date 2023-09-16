@@ -374,7 +374,7 @@ async def get_applicants(request: Request):
                     "img": applicant.profile_image,
                     "jobs": job.title,
                     "job_id": job.id,
-                    "status": applicant.status,
+                    "status": status,
                 }
 
             job_info = {"job_id": job.id, "job_title": job.title, "status": status}
