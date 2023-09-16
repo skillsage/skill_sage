@@ -87,6 +87,8 @@ async def get_courses(request: Request):
                 "requirements": course.requirements,
                 "skills": course.skills,
                 "image": course.image,
+                "language": course.language,
+                "isActive": course.isActive,
                 "items": [],
             }
 
