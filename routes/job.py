@@ -361,12 +361,13 @@ async def get_applicants(request: Request):
 
         for applicant, job, status, resume, skills in applicants:
             user_id = applicant.id
-
+            print(status)
             if user_id not in applicant_dict:
                 applicant_dict[user_id] = {
                     "id": user_id,
                     "skills": [],
                     "resume": [],
+                    "languages": applicant.profile.languages,
                     "name": applicant.name,
                     "email": applicant.email,
                     "experiences": applicant.experiences,
@@ -377,9 +378,9 @@ async def get_applicants(request: Request):
                     "status": status,
                 }
 
-            job_info = {"job_id": job.id, "job_title": job.title, "status": status}
-            if job_info not in applicant_dict[user_id]["jobs"]:
-                applicant_dict[user_id]["jobs"].append(job_info)
+            # job_info = {"job_id": job.id, "job_title": job.title, "status": status}
+            # if job_info not in applicant_dict[user_id]["jobs"]:
+            #     applicant_dict[user_id]["jobs"].append(job_info)
 
             resume_url = f"{base_url}user/file/{resume.filename}"
             applicant_dict[user_id]["resume"].append(resume_url)
