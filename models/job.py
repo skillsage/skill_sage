@@ -38,7 +38,7 @@ class JobApplication(Base):
     __tablename__ = "job_applications"
     id = mapped_column(Integer(), primary_key=True, index=True)
     user_id = mapped_column(Integer(), ForeignKey("users.id"), nullable=False)
-    job_id = mapped_column(Integer(), ForeignKey("jobs.id"), nullable=False)
+    job_id = mapped_column(Integer(), ForeignKey("jobs.id"), nullable=False, unique=True)
     status = mapped_column(String(), nullable=False)  # e.g., "pending," "accepted," "rejected"
     # Add more fields as needed
 
