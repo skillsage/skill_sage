@@ -323,7 +323,6 @@ async def get_courses_by_skill(skill: str):
                 "image": course.image,
                 "language": course.language,
                 "lessons": course.lessons,
-                "time": course.time,
                 "items": [],
             }
 
@@ -339,6 +338,7 @@ async def get_courses_by_skill(skill: str):
                         "id": s.id,
                         "name": s.name,
                         "video": s.video,
+                        "time": s.time,
                     }
 
                     # Append the session data to the 'sessions' list within the 'item' dictionary
