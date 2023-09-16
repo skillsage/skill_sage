@@ -12,13 +12,14 @@ app = FastAPI()
 load_dotenv()
 initDB()
 
+
+app.include_router(j2_router)
+app.include_router(c2_router)
+app.include_router(c_router)
+app.include_router(j_router)
 app.include_router(auth_router)
 app.include_router(router)
 app.include_router(app_router)
-app.include_router(c_router)
-app.include_router(c2_router)
-app.include_router(j_router)
-app.include_router(j2_router)
 
 origins = [
     "http://localhost:3000",

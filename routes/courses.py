@@ -124,9 +124,10 @@ async def get_details(request: Request, course_id: int):
     try:
         course = (
             session.query(Course)
-            .filter(Course.id == course_id, Course.user_id == user_id)
+            .filter(Course.id == course_id)
             .first()
         )
+        # , Course.user_id == user_id
 
         if not course:
             return sendError("Course not found")
