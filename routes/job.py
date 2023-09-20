@@ -8,6 +8,7 @@ from pydantic import BaseModel, EmailStr
 from .helpers import sendError, sendSuccess
 from typing import List, Optional
 import datetime
+from sqlalchemy.orm import joinedload
 
 router = APIRouter(
     prefix="/job",
@@ -349,24 +350,23 @@ async def delete_application(job_id: int, request: Request):
 async def get_applicants(request: Request):
     try:
         applicants = (
-            session.query(User, Job, JobApplication.status, UserResume, JobSeekerSkill)
+            session.query(User, Job, JobApplication.status, JobSeekerSkill)
             .join(JobApplication, User.id == JobApplication.user_id)
             .join(Job, Job.id == JobApplication.job_id)
-            .join(UserResume, UserResume.user_id == JobApplication.user_id)
-            .join(JobSeekerSkill.skill).filter(JobSeekerSkill.user_id == JobApplication.user_id)
+            .join(JobSeekerSkill, JobSeekerSkill.user_id == JobApplication.user_id)
             .all()
         )
         applicant_dict = {}
         base_url = request.base_url
 
-        for applicant, job, status, resume, skills in applicants:
+        for applicant, job, status, skills in applicants:
             user_id = applicant.id
-            print(status)
+
             if user_id not in applicant_dict:
                 applicant_dict[user_id] = {
                     "id": user_id,
                     "skills": [],
-                    "resume": [],
+                    "resume": [],  # Initialize the 'resume' list
                     "languages": applicant.profile.languages,
                     "name": applicant.name,
                     "email": applicant.email,
@@ -378,12 +378,13 @@ async def get_applicants(request: Request):
                     "status": status,
                 }
 
-            # job_info = {"job_id": job.id, "job_title": job.title, "status": status}
-            # if job_info not in applicant_dict[user_id]["jobs"]:
-            #     applicant_dict[user_id]["jobs"].append(job_info)
+            resume_links = []
+            links = session.query(UserResume).filter(UserResume.user_id == user_id).all()
+            for user_resume in links:
+                resume_links.append(str(base_url) + "user/file/" + user_resume.filename)
 
-            resume_url = f"{base_url}user/file/{resume.filename}"
-            applicant_dict[user_id]["resume"].append(resume_url)
+            applicant_dict[user_id]["resume"].extend(resume_links)  # Extend the 'resume' list
+
             if skills.skill.name not in applicant_dict[user_id]["skills"]:
                 applicant_dict[user_id]["skills"].append(skills.skill.name)
 
@@ -396,6 +397,7 @@ async def get_applicants(request: Request):
         return sendError(err.args)
     finally:
         session.close()
+
 
 
 @router.put("/status")
