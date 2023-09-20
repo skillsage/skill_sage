@@ -71,7 +71,7 @@ async def get_courses(request: Request):
     try:
         courses = (
             session.query(Course)
-            .filter(Course.user_id == user_id)
+            # .filter(Course.user_id == user_id)
             .outerjoin(CourseItem)  
             .outerjoin(CourseSession) 
             .all()
