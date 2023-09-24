@@ -260,6 +260,56 @@ async def add_item(request: Request, data: CourseItemData):
         session.close()
 
 
+@router.put("/item/{item_id}")
+async def update_item(item_id: int, data: CourseItemData):
+    user_id = request.state.user["id"]
+    try:
+        item = (
+            session.query(CourseItem)
+            .filter(CourseItem.id == item_id, CourseItem.course.user_id == user_id)
+            .first()
+        )
+
+        if not item:
+            return sendError("Item not found")
+
+        item.name = data.name
+        session.commit()
+        return sendSuccess("updated")
+    except Exception as err:
+        session.rollback()
+        print(err)
+        return sendError(err.args)
+    finally:
+        session.close()
+
+
+@router.delete("/item/{item_id}")
+async def delete_item(request:Request, item_id: int):
+    user_id = request.state.user["id"]
+    try:
+        item = (
+            session.query(CourseItem)
+            .filter(CourseItem.id == item_id)
+            .first()
+        )
+
+        if not item:
+            return sendError("Item not found")
+
+        session.delete(item)
+        session.commit()
+        return sendSuccess("deleted")
+    except Exception as err:
+        session.rollback()
+        print(err)
+        return sendError(err.args)
+    finally:
+        session.close()
+
+
+
+
 class CourseSessionData(BaseModel):
     name: str
     video: str
@@ -288,6 +338,64 @@ async def add_session(request: Request, data: CourseSessionData):
         session.add(s)
         session.commit()
         return sendSuccess("created")
+    except Exception as err:
+        session.rollback()
+        print(err)
+        return sendError(err.args)
+    finally:
+        session.close()
+
+
+@router.put("/session/{session_id}")
+async def update_session(session_id: int, data: CourseSessionData):
+    try:
+        user_id = request.state.user["id"]
+        session_to_update = (
+            session.query(CourseSession)
+            .join(CourseItem)
+            .join(Course)
+            .filter(CourseSession.id == session_id, Course.user_id == user_id)
+            .first()
+        )
+
+        if not session_to_update:
+            return sendError("Session not found")
+
+        if data.name is not None:
+            session_to_update.name = data.name
+        if data.video is not None:
+            session_to_update.video = data.video
+        if data.time is not None:
+            session_to_update.time = data.time
+        session.commit()
+        return sendSuccess("updated")
+    except Exception as err:
+        session.rollback()
+        print(err)
+        return sendError(err.args)
+    finally:
+        session.close()
+
+
+
+@router.delete("/session/{session_id}")
+async def delete_session(session_id: int):
+    try:
+        user_id = request.state.user["id"]
+        session_to_delete = (
+            session.query(CourseSession)
+            .join(CourseItem)
+            .join(Course)
+            .filter(CourseSession.id == session_id)
+            .first()
+        )
+
+        if not session_to_delete:
+            return sendError("Session not found")
+
+        session.delete(session_to_delete)
+        session.commit()
+        return sendSuccess("deleted")
     except Exception as err:
         session.rollback()
         print(err)

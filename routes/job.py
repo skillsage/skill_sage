@@ -356,39 +356,35 @@ async def get_applicants(request: Request):
             .join(JobSeekerSkill, JobSeekerSkill.user_id == JobApplication.user_id)
             .all()
         )
-        applicant_dict = {}
-        base_url = request.base_url
+        applicant_list = []
 
         for applicant, job, status, skills in applicants:
             user_id = applicant.id
+            applicant_data = {
+                "id": user_id,
+                "languages": applicant.profile.languages,
+                "name": applicant.name,
+                "email": applicant.email,
+                "experiences": applicant.experiences,
+                "education": applicant.education,
+                "img": applicant.profile_image,
+            }
 
-            if user_id not in applicant_dict:
-                applicant_dict[user_id] = {
-                    "id": user_id,
-                    "skills": [],
-                    "resume": [],  # Initialize the 'resume' list
-                    "languages": applicant.profile.languages,
-                    "name": applicant.name,
-                    "email": applicant.email,
-                    "experiences": applicant.experiences,
-                    "education": applicant.education,
-                    "img": applicant.profile_image,
-                    "jobs": job.title,
-                    "job_id": job.id,
-                    "status": status,
-                }
+            application = {
+                "job_title": job.title,
+                "job_id": job.id,
+                "status": status,
+                "skills": [skills.skill.name],
+                "resume_links": [
+                    str(request.base_url) + "user/file/" + resume.filename
+                    for resume in session.query(UserResume).filter(
+                        UserResume.user_id == user_id
+                    ).all()
+                ],
+            }
 
-            resume_links = []
-            links = session.query(UserResume).filter(UserResume.user_id == user_id).all()
-            for user_resume in links:
-                resume_links.append(str(base_url) + "user/file/" + user_resume.filename)
-
-            applicant_dict[user_id]["resume"].extend(resume_links)  # Extend the 'resume' list
-
-            if skills.skill.name not in applicant_dict[user_id]["skills"]:
-                applicant_dict[user_id]["skills"].append(skills.skill.name)
-
-        applicant_list = list(applicant_dict.values())
+            applicant_data.update(application)
+            applicant_list.append(applicant_data)
 
         return sendSuccess(applicant_list)
     except Exception as err:
