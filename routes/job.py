@@ -81,14 +81,14 @@ async def post_job(request: Request, data: JobData):
 
 @router.put("/")
 async def update_job(request: Request, data: JobData):
-    user_id = request.state.user["id"]
+    # user_id = request.state.user["id"]
     try:
         job = session.query(Job).filter(Job.id == data.id).first()
         if job is None:
             return sendError("Job not found")
 
-        if job.user_id != user_id:
-            return sendError("You do not have permission to update this job")
+        # if job.user_id != user_id:
+        #     return sendError("You do not have permission to update this job")
 
         # Update the specific fields provided in the request
         if data.title is not None:
