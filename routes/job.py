@@ -111,7 +111,7 @@ async def update_job(request: Request, data: JobData):
             job.salary = data.salary
         if data.type is not None:
             job.type = data.type
-        if data.job is not None:
+        if data.company is not None:
             job.company = data.company
 
         session.commit()
