@@ -7,8 +7,8 @@ from routes.helpers import sendError
 
 DATABASE_URL = "sqlite:///main.sqlite"
 # POSTGRES_URL = "postgresql://postgres:Hyxt1ZY0elg7aS07Ykl4@containers-us-west-118.railway.app:5778/railway"
-# POSTGRES_URL = "postgresql://143.198.235.166:5432/skill_sage?user=admin&password=admin"
-POSTGRES_URL = "postgresql://postgres:administrator@skill-sage-db.c9xcjxxsg3qg.eu-north-1.rds.amazonaws.com:5432/skillsage_db"
+POSTGRES_URL = "postgresql://localhost:5432/skill_sage?user=postgres&password=admin"
+# POSTGRES_URL = "postgresql://postgres:administrator@skill-sage-db.c9xcjxxsg3qg.eu-north-1.rds.amazonaws.com:5432/skillsage_db"
 
 engine = create_engine(POSTGRES_URL, echo=True)
 
